@@ -1,0 +1,20 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: example-app
+  
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Replace with your Keycloak server URL and realm
+          issuer-uri: https://your-keycloak-server/realms/your-realm
+          # Alternative: use jwk-set-uri
+          # jwk-set-uri: https://your-keycloak-server/realms/your-realm/protocol/openid-connect/certs
+
+logging:
+  level:
+    com.example.demo.config: DEBUG
+    org.springframework.security: DEBUG

@@ -1,0 +1,88 @@
+Keycloak Spring Security Library - Directory Structure
+======================================================
+
+📦 keycloak-spring-security-lib/
+│
+├── 📘 START_HERE.md                    ← ⭐ Read this first!
+│
+├── 📄 Documentation/
+│   ├── GETTING_STARTED.md              ← Step-by-step setup guide
+│   ├── QUICK_REFERENCE.md              ← Command cheat sheet
+│   ├── CONVERSION_SUMMARY.md           ← What changed from app to lib
+│   ├── INSTALLATION_GUIDE.md           ← Detailed configuration
+│   ├── PROJECT_SUMMARY.md              ← Technical overview
+│   └── README.md                       ← Library documentation
+│
+├── 🔧 Build Files/
+│   ├── pom.xml                         ← Maven configuration for library
+│   ├── build.sh                        ← Automated build script
+│   └── .gitignore                      ← Git ignore rules
+│
+├── 💻 Source Code/
+│   └── src/
+│       └── main/
+│           └── java/
+│               └── com/example/demo/config/
+│                   ├── SecurityConfig.java      ← OAuth2/JWT security setup
+│                   └── CorsConfig.java          ← CORS configuration
+│
+└── 📚 Examples/
+    ├── README.md                       ← Examples documentation
+    └── basic-app/                      ← Complete working example
+        ├── pom.xml                     ← Example app POM
+        └── src/
+            └── main/
+                ├── java/
+                │   └── com/example/app/
+                │       ├── ExampleApplication.java      ← Main app class
+                │       └── controller/
+                │           └── ExampleController.java   ← Sample endpoints
+                └── resources/
+                    └── application.yml                   ← Config example
+
+Legend
+------
+📘 = Start here
+📄 = Documentation
+🔧 = Build/config files
+💻 = Source code
+📚 = Examples
+⭐ = Most important
+
+Quick Start Path
+----------------
+1. Read START_HERE.md
+2. Run: ./build.sh
+3. Check examples/basic-app/
+4. Add library to your project
+5. Import SecurityConfig and CorsConfig
+
+File Purposes
+------------
+START_HERE.md           - Overview and quick start
+GETTING_STARTED.md      - Detailed walkthrough with examples
+QUICK_REFERENCE.md      - Quick commands and snippets
+CONVERSION_SUMMARY.md   - Complete conversion documentation
+INSTALLATION_GUIDE.md   - Advanced setup and troubleshooting
+PROJECT_SUMMARY.md      - Technical details and architecture
+build.sh                - One-command build script
+pom.xml                 - Library Maven configuration
+SecurityConfig.java     - JWT authentication and security rules
+CorsConfig.java         - Cross-origin request configuration
+examples/basic-app/     - Working reference implementation
+
+Build & Install
+---------------
+./build.sh
+# or
+mvn clean install
+
+Artifact Location
+----------------
+~/.m2/repository/com/example/keycloak-spring-security-lib/1.0.0/
+
+Generated Files (after build)
+-----------------------------
+target/keycloak-spring-security-lib-1.0.0.jar          (main library)
+target/keycloak-spring-security-lib-1.0.0-sources.jar  (source code)
+target/keycloak-spring-security-lib-1.0.0-javadoc.jar  (documentation)
