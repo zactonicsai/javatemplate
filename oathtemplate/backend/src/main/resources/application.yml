@@ -1,0 +1,42 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      cookie:
+        # Force the cookie name to be JSESSIONID
+        name: JSESSIONID
+        
+        # Prevents JavaScript (XSS) from reading the cookie
+        http-only: true
+        
+        # Set to 'true' only if you are using HTTPS (SSL). 
+        # If you are on localhost (http), keep this 'false'.
+        secure: false
+        
+        # Strict prevents the cookie from being sent in cross-site requests (CSRF protection)
+        same-site: strict
+        
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9191/realms/demo-realm
+
+
+  
+
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.boot.autoconfigure: INFO
+
+app:
+  oauth2:
+    authorization-uri: http://localhost:9191/realms/demo-realm/protocol/openid-connect/auth
+    client-id: demo-client
+    redirect-uri: http://localhost:8080/api/hello

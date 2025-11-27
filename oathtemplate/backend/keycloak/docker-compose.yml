@@ -1,0 +1,17 @@
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak_demo
+    # start-dev is for development mode (faster startup, no HTTPS required)
+    # --import-realm tells Keycloak to look for json files in data/import
+    command: start-dev --import-realm
+    environment:
+      # This is the Master Realm Super Admin (for the Keycloak Console)
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    volumes:
+      # Mount our local JSON config to the import directory
+      - ./realm-export.json:/opt/keycloak/data/import/realm.json
+    ports:
+      - "9191:8080"
