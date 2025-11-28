@@ -35,25 +35,22 @@
         </dependency>
 
         <!-- Spring Security - provided scope -->
-        <dependency>
+        <!--dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!-- OAuth2 Resource Server - provided scope -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
             <scope>provided</scope>
         </dependency>
-
-        <!-- OAuth2 JOSE - provided scope -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-oauth2-jose</artifactId>
             <scope>provided</scope>
-        </dependency>
+        </dependency -->
 
         <!-- Lombok - optional for library users -->
         <dependency>
@@ -71,12 +68,12 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
+        <!-- dependency>
             <groupId>com.example</groupId>
             <artifactId>keycloak-spring-security-lib</artifactId>
             <version>1.0.0</version>
             <scope>provided</scope>
-        </dependency>
+        </dependency -->
 
         <!-- Jakarta Servlet API - provided scope -->
         <dependency>
