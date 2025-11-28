@@ -71,7 +71,7 @@ public class SecurityConfig {
                 sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             ) 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/getAuth").permitAll()
+                .requestMatchers("/api/hello2").permitAll()
                 .requestMatchers("/", "/api/**", "/css/**", "/js/**", "/images/**")
                     .hasRole("USER")
                 .anyRequest().authenticated()

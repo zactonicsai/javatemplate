@@ -9,6 +9,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class HelloController {
 
+    @GetMapping("/api/hellow")
+    public String hellow(@AuthenticationPrincipal Jwt jwt){
+      
+        return "{ data: 'Hello PUBLIC } ";
+    }
+
     @GetMapping("/api/hello")
     @PreAuthorize("hasRole('USER')")
     public String hello(@AuthenticationPrincipal Jwt jwt){

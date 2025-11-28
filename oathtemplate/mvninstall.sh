@@ -1,1 +1,0 @@
-mvn install:install-file -Dfile=keycloak-spring-security-lib-1.0.0.jar -DgroupId=com.example   -DartifactId=keycloak-spring-security-lib  -Dversion=1.0.0 -Dpackaging=jar -DgeneratePom=true
