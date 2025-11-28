@@ -61,7 +61,7 @@ const callApi = async (endpoint, options = {}) => {
  * Call the basic hello endpoint
  */
 export const callHelloEndpoint = async () => {
-  return callApi('/hellow');
+  return callApi('/info');
 };
 
 /**
