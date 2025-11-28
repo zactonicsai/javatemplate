@@ -75,8 +75,7 @@
             <groupId>com.example</groupId>
             <artifactId>keycloak-spring-security-lib</artifactId>
             <version>1.0.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/keycloak-spring-security-lib-1.0.0.jar</systemPath>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Jakarta Servlet API - provided scope -->
