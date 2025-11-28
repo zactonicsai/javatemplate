@@ -6,9 +6,9 @@ import org.springframework.context.annotation.Import;
 
 import com.example.demo.config.CorsConfig;
 import com.example.demo.config.SecurityConfig;
-
+import com.example.demo.web.HelloController;
 @SpringBootApplication
-@Import({SecurityConfig.class, CorsConfig.class})
+@Import({SecurityConfig.class, CorsConfig.class, HelloController.class})
 public class Java21WebLombokAppApplication {
 
 	public static void main(String[] args) {
