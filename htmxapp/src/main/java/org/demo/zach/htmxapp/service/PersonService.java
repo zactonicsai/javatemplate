@@ -8,9 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.demo.zach.htmxapp.model.PersonMapper;
 import org.demo.zach.htmxapp.model.dto.PersonDTO;
 import org.demo.zach.htmxapp.model.entity.Person;
+import org.demo.zach.htmxapp.model.mapper.PersonMapper;
 import org.demo.zach.htmxapp.repository.PersonRepository;
 
 @Service

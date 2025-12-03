@@ -1,4 +1,4 @@
-package org.demo.zach.htmxapp.model;
+package org.demo.zach.htmxapp.model.mapper;
 
 import org.demo.zach.htmxapp.model.dto.PersonDTO;
 import org.demo.zach.htmxapp.model.entity.Person;
