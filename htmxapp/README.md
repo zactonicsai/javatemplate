@@ -1,173 +1,137 @@
-<pre>
-spring-htmx-app/
-├── docker-compose.yml          # Docker orchestration
-├── Dockerfile                  # Spring Boot container
-├── pom.xml                     # Maven dependencies
-├── src/main/
-│   ├── java/com/example/taskapp/
-│   │   ├── TaskApplication.java       # Main application
-│   │   ├── model/Task.java           # Task entity with ID, name, task
-│   │   ├── repository/TaskRepository.java
-│   │   └── controller/TaskController.java  # CRUD endpoints
-│   └── resources/
-│       ├── application.properties    # Database config
-│       └── templates/
-│           ├── index.html           # Main page
-│           └── fragments/
-│               ├── task-list.html   # Task list component
-│               └── task-form.html   # Edit form component
-</pre>
+# HTMX Person Manager + SQS Demo (Spring Boot)
 
-# Spring Boot HTMX Task Manager
+This project is a **Spring Boot 3.5.x** demo app that shows how to:
 
-A modern task management application built with:
-- **Java 21**
-- **Spring Boot 3.4.0**
-- **HTMX** for dynamic interactions
-- **Tailwind CSS** for styling
-- **PostgreSQL** database
-- **Docker Compose** for easy deployment
+- Manage a `Person` table in **PostgreSQL** via a REST API
+- Drive a modern **Tailwind CSS + vanilla JS** UI page that calls that API
+- Integrate with **AWS SQS (via LocalStack)** to send and receive messages
+- Use **Liquibase** to manage database schema and seed data
+- Write **unit tests** around the SQS sender and listener components
 
-## Features
+The app is currently named **`Task Manager`** in configuration, but the active domain model is `Person` (older `Task` classes are kept as `.old` reference files).
 
-✅ Create, Read, Update, Delete (CRUD) operations for tasks
-✅ Real-time updates without page refresh using HTMX
-✅ Beautiful UI with Tailwind CSS
-✅ PostgreSQL database for data persistence
-✅ Docker containerization
-✅ Form validation
+---
 
-## Prerequisites
+## 1. Tech Stack
 
-- Docker and Docker Compose installed on your system
+**Back end**
 
-## Getting Started
+- Java (JDK 17+ recommended for Spring Boot 3.5.x)
+- Spring Boot 3.5.8
+  - `spring-boot-starter-web` – REST API
+  - `spring-boot-starter-actuator` – health/info endpoints
+  - `spring-boot-starter-thymeleaf` – template engine (not heavily used; main UI is static HTML in `/static`)
+  - `spring-boot-starter-data-jpa` – JPA/Hibernate for `Person` entity
+  - `spring-boot-starter-validation` – Bean validation support
+- **Liquibase** – database migrations, schema creation, and sample data
+- **PostgreSQL** – main database
+- **AWS SDK v2 for SQS** – `software.amazon.awssdk:sqs`
+- **Lombok** – `@Data`, `@Builder`, `@NoArgsConstructor`, `@AllArgsConstructor`, `@RequiredArgsConstructor`
+- **JUnit 5 + Mockito + AssertJ** – unit tests for SQS services
 
-### 1. Clone or navigate to the project directory
+**Front end**
 
-```bash
-cd spring-htmx-app
-```
+- Static HTML in `src/main/resources/static/index.html`
+- Tailwind CSS (via CDN)
+- Font Awesome icons
+- Vanilla JS calling `http://localhost:8080/api/persons`
 
-### 2. Build and run with Docker Compose
+---
 
-```bash
-docker-compose up --build
-```
+## 2. High-Level Architecture
 
-This command will:
-- Build the Spring Boot application
-- Start PostgreSQL database
-- Run the application on port 8080
+### Domain: Person Management
 
-### 3. Access the application
+Files:
 
-Open your browser and navigate to:
-```
-http://localhost:8080
-```
+- `model/entity/Person.java`
+- `model/dto/PersonDTO.java`
+- `model/mapper/PersonMapper.java`
+- `repository/PersonRepository.java`
+- `service/PersonService.java`
+- `controller/PersonController.java`
 
-## Architecture
+Flow:
 
-### Project Structure
-```
-spring-htmx-app/
-├── src/
-│   └── main/
-│       ├── java/
-│       │   └── com/example/taskapp/
-│       │       ├── TaskApplication.java
-│       │       ├── controller/
-│       │       │   └── TaskController.java
-│       │       ├── model/
-│       │       │   └── Task.java
-│       │       └── repository/
-│       │           └── TaskRepository.java
-│       └── resources/
-│           ├── application.properties
-│           └── templates/
-│               ├── index.html
-│               └── fragments/
-│                   ├── task-list.html
-│                   └── task-form.html
-├── Dockerfile
-├── docker-compose.yml
-└── pom.xml
-```
+1. **HTTP request** hits `PersonController` (`/api/persons`).
+2. Controller delegates to `PersonService`.
+3. `PersonService` uses `PersonRepository` (Spring Data JPA) to interact with Postgres.
+4. Entities (`Person`) are mapped to DTOs (`PersonDTO`) via `PersonMapper`.
+5. JSON DTOs are returned to the browser.
 
-### Key Components
+### SQS Messaging
 
-**Task Entity**
-- `id` (Long): Auto-generated unique identifier
-- `name` (String): Name of the person
-- `task` (String): Task description
+Files:
 
-**HTMX Integration**
-- Uses `hx-post`, `hx-put`, `hx-delete`, `hx-get` for AJAX requests
-- Dynamic content updates without full page reload
-- Smooth transitions and user experience
+- `config/SqsConfig.java`
+- `config/SqsQueueInitializer.java`
+- `service/SqsSenderService.java`
+- `service/SqsListenerService.java`
+- `controller/SqsController.java`
 
-**Tailwind CSS**
-- Modern, responsive design
-- Gradient backgrounds
-- Interactive hover effects
-- Clean form styling
+Flow:
 
-## API Endpoints
+1. `SqsConfig` builds a **singleton `SqsClient`** using Spring `@Configuration` + `@Bean`,
+   reading `aws.region` and `aws.endpoint` from `application.yml`, and using static test credentials.
+2. `SqsQueueInitializer` runs at startup (`@PostConstruct`) to:
+   - Check if the configured queue exists.
+   - Create it if missing.
+3. `SqsSenderService` sends messages to the configured queue URL.
+4. `SqsController` exposes an HTTP endpoint:
+   - `POST /sqs/send?message=...` → calls `SqsSenderService.sendMessage(...)`.
+5. `SqsListenerService` uses `@Scheduled` to poll the queue periodically:
+   - Calls `receiveMessage` with a `ReceiveMessageRequest`.
+   - Logs received messages using `@Slf4j`.
+   - Deletes messages from the queue via `deleteMessage` to prevent re-delivery.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | Main page with task list and form |
-| POST | `/tasks` | Create a new task |
-| GET | `/tasks/{id}/edit` | Get edit form for a task |
-| PUT | `/tasks/{id}` | Update an existing task |
-| DELETE | `/tasks/{id}` | Delete a task |
-| GET | `/tasks/{id}/cancel` | Cancel edit mode |
+> SQS is typically intended to run against **LocalStack** in dev, configured via `aws.endpoint` in `application.yml`.
 
-## Database Configuration
+### UI / Front End
 
-The PostgreSQL database is configured with:
-- Database: `taskdb`
-- Username: `taskuser`
-- Password: `taskpass`
-- Port: `5432`
+File:
 
-## Development
+- `src/main/resources/static/index.html`
 
-### Running without Docker
+Key points:
 
-If you want to run locally without Docker:
+- A single-page “Person Management” UI using Tailwind and Font Awesome.
+- JavaScript uses `fetch` to call the REST API at `http://localhost:8080/api/persons`.
+- Features:
+  - **List** all persons in a table.
+  - **Add** a new person via a modal form.
+  - **Edit** an existing person.
+  - **Delete** a person (with confirmation).
+  - Shows a record count and “Last updated” timestamp.
+  - Simple toast notifications for success/error.
 
-1. Start PostgreSQL on your local machine
-2. Update `application.properties` with your database credentials
-3. Run:
-```bash
-mvn spring-boot:run
-```
+---
 
-### Stopping the Application
+## 3. Configuration (`application.yml`)
 
-```bash
-docker-compose down
-```
+Location: `src/main/resources/application.yml`
 
-To remove volumes as well:
-```bash
-docker-compose down -v
-```
+```yaml
+spring:
+  application:
+    name: Task Manager
 
-## Technologies Used
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/taskdb}
+    username: ${SPRING_DATASOURCE_USERNAME:taskuser}
+    password: ${SPRING_DATASOURCE_PASSWORD:taskpass}
+    driver-class-name: org.postgresql.Driver
 
-- **Spring Boot 3.5.8**: Modern Java framework
-- **Java 21**: Latest LTS version with modern features
-- **HTMX 1.9.10**: High-power tools for HTML
-- **Tailwind CSS**: Utility-first CSS framework
-- **PostgreSQL 16**: Robust relational database
-- **Thymeleaf**: Server-side Java template engine
-- **Spring Data JPA**: Data access layer
-- **Lombok**: Reduce boilerplate code
-- **Maven**: Build and dependency management
+  thymeleaf:
+    cache: false
 
-## License
+server:
+  port: 8080
 
-MIT License - Feel free to use this project for learning and development!
+# (JPA and Liquibase config in this section; some JPA settings are commented out)
+
+aws:
+  region: us-east-1
+  endpoint: http://localstack:4566
+  sqs:
+    queue-name: updates
+    queue-url: http://localstack:4566/000000000000/updates
