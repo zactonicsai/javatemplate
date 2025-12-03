@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:18-alpine
@@ -28,6 +26,27 @@ services:
       - postgres
     networks:
       - app-network
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - "4566:4566"          # Edge port (all services)
+      - "4510-4559:4510-4559" # Lambda + internal
+    environment:
+      - SERVICES=s3,dynamodb,sqs,lambda
+      - DEBUG=1
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - LAMBDA_EXECUTOR=docker-reuse
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "./localstack:/var/lib/localstack"   # persistence (optional)
+      - "/var/run/docker.sock:/var/run/docker.sock"  # needed for lambda docker
+    networks:
+      - app-network   # or whatever network your other backend services use
+
 
 volumes:
   postgres-data:
