@@ -10,11 +10,11 @@ COPY src ./src
 
 RUN mvn package -DskipTests
 
-FROM openjdk:21-jre-slim
+FROM openjdk:26-ea-jdk
 
 WORKDIR /app
 
-COPY --from=builder /app/target/hello-docker-app-1.0.0.jar app.jar
+COPY --from=builder /app/target/htmxapp-v1.jar app.jar
 
 CMD ["java", "-jar", "app.jar"]
 

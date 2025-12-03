@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>org.demo.zach</groupId>
 	<artifactId>htmxapp</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>v1</version>
 	<name>htmxapp</name>
 	<description>Demo project for Spring Boot</description>
 	<url />
@@ -48,15 +48,27 @@
 			<artifactId>htmx-spring-boot-thymeleaf</artifactId>
 			<version>4.0.2</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-		<dependency>
+			 <dependency>
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-core</artifactId>
+		</dependency>
+		<!-- 
+		
+		 <dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
 		</dependency>
@@ -66,11 +78,10 @@
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
-		</dependency>
+		
+
+		-->
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
