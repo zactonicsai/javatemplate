@@ -1,1 +1,345 @@
-<h1>Works</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Person Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-users mr-3 text-indigo-600"></i>Person Management
+            </h1>
+            <p class="text-gray-600">Manage your person records with ease</p>
+        </div>
+
+        <!-- Add Person Button -->
+        <div class="mb-6 flex justify-between items-center">
+            <button onclick="openAddModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
+                <i class="fas fa-plus"></i>
+                Add New Person
+            </button>
+            <div class="text-sm text-gray-600">
+                <span id="recordCount">0</span> records found
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-semibold">ID</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold">First Name</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold">Last Name</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold">Street Address</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold">City</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold">State</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold">Zip Code</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold">Country</th>
+                            <th class="px-6 py-4 text-center text-sm font-semibold">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-gray-200">
+                        <!-- Rows will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="emptyState" class="text-center py-12">
+                <i class="fas fa-inbox text-gray-400 text-4xl mb-4 block"></i>
+                <p class="text-gray-600 text-lg">No persons found. Click "Add New Person" to get started.</p>
+            </div>
+        </div>
+
+        <!-- Timestamp Info -->
+        <div class="mt-6 text-right text-sm text-gray-600">
+            <p>Last updated: <span id="lastUpdated">--:--:--</span></p>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4">
+            <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-8 py-6 flex justify-between items-center">
+                <h2 id="modalTitle" class="text-2xl font-bold text-white">Add New Person</h2>
+                <button onclick="closeModal()" class="text-white hover:text-gray-200 transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <form id="personForm" class="p-8">
+                <div class="hidden">
+                    <input type="hidden" id="personId">
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">First Name *</label>
+                        <input type="text" id="firstName" placeholder="Enter first name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Last Name *</label>
+                        <input type="text" id="lastName" placeholder="Enter last name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600" required>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Street Address</label>
+                    <input type="text" id="streetAddress" placeholder="Enter street address" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">City</label>
+                        <input type="text" id="city" placeholder="Enter city" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">State</label>
+                        <input type="text" id="state" placeholder="Enter state" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Zip Code</label>
+                        <input type="text" id="zipCode" placeholder="Enter zip code" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Country</label>
+                        <input type="text" id="country" placeholder="Enter country" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                    </div>
+                </div>
+
+                <div class="flex gap-4 justify-end">
+                    <button type="button" onclick="closeModal()" class="px-6 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition flex items-center gap-2">
+                        <i class="fas fa-save"></i>
+                        <span id="submitBtnText">Save Person</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="hidden fixed bottom-8 right-8 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Operation successful</span>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = 'http://localhost:8080/api/persons';
+        let allPersons = [];
+        let editingId = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPersons();
+            document.getElementById('personForm').addEventListener('submit', handleFormSubmit);
+            setInterval(updateTimestamp, 1000);
+            updateTimestamp();
+        });
+
+        // Load all persons
+        async function loadPersons() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('Failed to fetch persons');
+                
+                allPersons = await response.json();
+                renderTable();
+                updateRecordCount();
+            } catch (error) {
+                console.error('Error loading persons:', error);
+                showToast('Failed to load persons', 'error');
+            }
+        }
+
+        // Render table
+        function renderTable() {
+            const tableBody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if (allPersons.length === 0) {
+                tableBody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            tableBody.innerHTML = allPersons.map(person => `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4 text-sm text-gray-900 font-semibold">${person.id}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">${person.firstName}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">${person.lastName}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">${person.streetAddress || '-'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">${person.city || '-'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">${person.state || '-'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">${person.zipCode || '-'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">${person.country || '-'}</td>
+                    <td class="px-6 py-4 text-sm text-center">
+                        <div class="flex gap-2 justify-center">
+                            <button onclick="editPerson(${person.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition flex items-center gap-1">
+                                <i class="fas fa-edit text-sm"></i>
+                                Edit
+                            </button>
+                            <button onclick="deletePerson(${person.id})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition flex items-center gap-1">
+                                <i class="fas fa-trash text-sm"></i>
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Open add modal
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Person';
+            document.getElementById('submitBtnText').textContent = 'Add Person';
+            document.getElementById('personForm').reset();
+            document.getElementById('personId').value = '';
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('personForm').reset();
+            editingId = null;
+        }
+
+        // Edit person
+        async function editPerson(id) {
+            const person = allPersons.find(p => p.id === id);
+            if (!person) return;
+
+            editingId = id;
+            document.getElementById('modalTitle').textContent = 'Edit Person';
+            document.getElementById('submitBtnText').textContent = 'Update Person';
+            document.getElementById('personId').value = person.id;
+            document.getElementById('firstName').value = person.firstName;
+            document.getElementById('lastName').value = person.lastName;
+            document.getElementById('streetAddress').value = person.streetAddress || '';
+            document.getElementById('city').value = person.city || '';
+            document.getElementById('state').value = person.state || '';
+            document.getElementById('zipCode').value = person.zipCode || '';
+            document.getElementById('country').value = person.country || '';
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        // Delete person
+        async function deletePerson(id) {
+            if (!confirm('Are you sure you want to delete this person?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error('Failed to delete person');
+                
+                showToast('Person deleted successfully', 'success');
+                await loadPersons();
+            } catch (error) {
+                console.error('Error deleting person:', error);
+                showToast('Failed to delete person', 'error');
+            }
+        }
+
+        // Handle form submission
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const personData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                streetAddress: document.getElementById('streetAddress').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                zipCode: document.getElementById('zipCode').value,
+                country: document.getElementById('country').value
+            };
+
+            try {
+                let response;
+                if (editingId) {
+                    // Update
+                    response = await fetch(`${API_URL}/${editingId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(personData)
+                    });
+                    if (!response.ok) throw new Error('Failed to update person');
+                    showToast('Person updated successfully', 'success');
+                } else {
+                    // Create
+                    response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(personData)
+                    });
+                    if (!response.ok) throw new Error('Failed to create person');
+                    showToast('Person created successfully', 'success');
+                }
+
+                closeModal();
+                await loadPersons();
+            } catch (error) {
+                console.error('Error saving person:', error);
+                showToast('Failed to save person', 'error');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden', 'bg-red-500', 'bg-green-500');
+            toast.classList.add(type === 'error' ? 'bg-red-500' : 'bg-green-500');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Update record count
+        function updateRecordCount() {
+            document.getElementById('recordCount').textContent = allPersons.length;
+        }
+
+        // Update timestamp
+        function updateTimestamp() {
+            const now = new Date();
+            const time = now.toLocaleTimeString();
+            document.getElementById('lastUpdated').textContent = time;
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Close modal on outside click
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
