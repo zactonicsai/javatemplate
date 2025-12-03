@@ -22,3 +22,8 @@ aws.region=us-east-1
 aws.endpoint=http://localstack:4566
 aws.sqs.queue-name=updates
 aws.sqs.queue-url=http://localstack:4566/000000000000/updates
+
+logging:
+  level:
+    root: TRACE
+    com.example.demo.service.SqsListenerService: DEBUG
