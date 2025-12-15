@@ -1,6 +1,8 @@
 package zac.demo.apps.dynamicclass.controller;
 
 import jakarta.annotation.PostConstruct;
+import zac.example.lib.DocConverter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;

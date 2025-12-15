@@ -1,4 +1,4 @@
-package zac.demo.apps.dynamicclass.controller;
+package zac.example.lib;
 
 public interface DocConverter {
     void convert(String input, String output);

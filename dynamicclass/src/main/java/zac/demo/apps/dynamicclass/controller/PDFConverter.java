@@ -2,6 +2,8 @@ package zac.demo.apps.dynamicclass.controller;
 
 import org.springframework.stereotype.Component;
 
+import zac.example.lib.DocConverter;
+
 @Component
 public class PDFConverter implements DocConverter {
     @Override

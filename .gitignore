@@ -141,3 +141,5 @@ oathtemplate/backend/target/
 keycloak-spring-security-lib-1.0.0.jar
 docxcnverter/.gradle/
 docxcnverter/target/
+examplelib/.gradle/
+examplelib/target/
