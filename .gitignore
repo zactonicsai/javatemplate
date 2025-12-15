@@ -143,3 +143,8 @@ docxcnverter/.gradle/
 docxcnverter/target/
 examplelib/.gradle/
 examplelib/target/
+docxconvert/.gradle/
+docxconvert/.DS_Store
+.DS_Store
+docxconverter/target
+docxconverter/.gradle/
