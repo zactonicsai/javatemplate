@@ -8,8 +8,7 @@
 		<version>3.5.8</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>zac.demo.apps</groupId>
-	<artifactId>dynamicclass</artifactId>
+	
 	<version>0.0.1-SNAPSHOT</version>
 	<name>dynamicclass</name>
 	<description>Demo  Dynamic classes</description>
@@ -35,7 +34,8 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
-		<dependency>
+		<dependency><groupId>zac.demo.apps</groupId>
+	<artifactId>docxlib</artifactId>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>

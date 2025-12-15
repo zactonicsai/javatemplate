@@ -139,3 +139,5 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 oathtemplate/backend/target/
 keycloak-spring-security-lib-1.0.0.jar
+docxcnverter/.gradle/
+docxcnverter/target/
