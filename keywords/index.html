@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastText Keyword Classifier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-brain text-4xl"></i>
+                    <div>
+                        <h1 class="text-3xl font-bold">FastText Classifier</h1>
+                        <p class="text-purple-200 text-sm">Intelligent Keyword Detection</p>
+                    </div>
+                </div>
+                <div id="statusIndicator" class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-green-400 rounded-full pulse-animation"></div>
+                    <span class="text-sm">Connected</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Keywords</p>
+                        <p id="keywordCount" class="text-3xl font-bold gradient-text">0</p>
+                    </div>
+                    <i class="fas fa-tags text-4xl text-purple-300"></i>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Examples</p>
+                        <p id="exampleCount" class="text-3xl font-bold gradient-text">0</p>
+                    </div>
+                    <i class="fas fa-database text-4xl text-purple-300"></i>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Model Status</p>
+                        <p id="modelStatus" class="text-lg font-bold text-gray-600">Not Trained</p>
+                    </div>
+                    <i class="fas fa-cog text-4xl text-purple-300"></i>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Predictions</p>
+                        <p id="predictionCount" class="text-3xl font-bold gradient-text">0</p>
+                    </div>
+                    <i class="fas fa-chart-line text-4xl text-purple-300"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="bg-white rounded-lg shadow-md mb-6">
+            <div class="flex border-b">
+                <button onclick="switchTab('predict')" id="tab-predict" 
+                    class="flex-1 px-6 py-4 font-semibold text-purple-600 border-b-2 border-purple-600 focus:outline-none">
+                    <i class="fas fa-search mr-2"></i>Predict Keywords
+                </button>
+                <button onclick="switchTab('train')" id="tab-train" 
+                    class="flex-1 px-6 py-4 font-semibold text-gray-500 hover:text-purple-600 focus:outline-none">
+                    <i class="fas fa-graduation-cap mr-2"></i>Train Model
+                </button>
+                <button onclick="switchTab('manage')" id="tab-manage" 
+                    class="flex-1 px-6 py-4 font-semibold text-gray-500 hover:text-purple-600 focus:outline-none">
+                    <i class="fas fa-list mr-2"></i>Manage Keywords
+                </button>
+            </div>
+        </div>
+
+        <!-- Predict Tab -->
+        <div id="content-predict" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Upload Section -->
+                <div class="bg-white rounded-lg shadow-md p-8">
+                    <h2 class="text-2xl font-bold mb-6 gradient-text">
+                        <i class="fas fa-file-upload mr-2"></i>Upload Document
+                    </h2>
+                    
+                    <div id="dropZone" class="border-4 border-dashed border-purple-300 rounded-lg p-12 text-center hover:border-purple-500 transition-colors cursor-pointer">
+                        <i class="fas fa-cloud-upload-alt text-6xl text-purple-300 mb-4"></i>
+                        <p class="text-gray-600 mb-2">Drag & drop your file here</p>
+                        <p class="text-gray-400 text-sm mb-4">or</p>
+                        <label class="bg-purple-600 text-white px-6 py-3 rounded-lg cursor-pointer hover:bg-purple-700 transition-colors inline-block">
+                            <i class="fas fa-folder-open mr-2"></i>Browse Files
+                            <input type="file" id="fileInput" class="hidden" accept=".txt,.doc,.docx,.pdf">
+                        </label>
+                    </div>
+                    
+                    <div id="fileInfo" class="mt-4 hidden">
+                        <div class="bg-purple-50 rounded-lg p-4 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-purple-600 text-2xl mr-3"></i>
+                                <div>
+                                    <p id="fileName" class="font-semibold text-gray-700"></p>
+                                    <p id="fileSize" class="text-sm text-gray-500"></p>
+                                </div>
+                            </div>
+                            <button onclick="clearFile()" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <label class="block text-gray-700 font-semibold mb-2">Or paste text directly:</label>
+                        <textarea id="textInput" rows="6" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="Paste your text here for keyword classification..."></textarea>
+                    </div>
+                    
+                    <button onclick="predictKeywords()" 
+                        class="w-full mt-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 px-6 rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-magic mr-2"></i>Analyze Document
+                    </button>
+                </div>
+
+                <!-- Results Section -->
+                <div class="bg-white rounded-lg shadow-md p-8">
+                    <h2 class="text-2xl font-bold mb-6 gradient-text">
+                        <i class="fas fa-chart-bar mr-2"></i>Analysis Results
+                    </h2>
+                    
+                    <div id="predictionResults" class="hidden">
+                        <div class="mb-6">
+                            <h3 class="font-semibold text-gray-700 mb-3">Document Preview:</h3>
+                            <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-600 italic border-l-4 border-purple-500">
+                                <p id="textPreview"></p>
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-semibold text-gray-700 mb-4">Top Keywords:</h3>
+                        <div id="keywordsList" class="space-y-4"></div>
+                    </div>
+                    
+                    <div id="predictionPlaceholder" class="text-center py-12">
+                        <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-400">Upload a document or paste text to see results</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Train Tab -->
+        <div id="content-train" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Add Training Data -->
+                <div class="bg-white rounded-lg shadow-md p-8">
+                    <h2 class="text-2xl font-bold mb-6 gradient-text">
+                        <i class="fas fa-plus-circle mr-2"></i>Add Training Data
+                    </h2>
+                    
+                    <form onsubmit="addTrainingData(event)" class="space-y-6">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-tag mr-1"></i>Keyword
+                            </label>
+                            <input type="text" id="trainKeyword" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="e.g., technology, sports, finance">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-align-left mr-1"></i>Example Sentences
+                            </label>
+                            <textarea id="trainSentences" rows="8" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="Enter one sentence per line:&#10;&#10;The smartphone features AI capabilities&#10;Cloud computing is expanding rapidly&#10;Machine learning improves efficiency"></textarea>
+                            <p class="text-sm text-gray-500 mt-2">
+                                <i class="fas fa-info-circle"></i> Enter one example per line
+                            </p>
+                        </div>
+                        
+                        <button type="submit" 
+                            class="w-full bg-green-600 text-white font-bold py-4 px-6 rounded-lg hover:bg-green-700 transition-all transform hover:scale-105 shadow-lg">
+                            <i class="fas fa-save mr-2"></i>Add Examples
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Train Model -->
+                <div class="bg-white rounded-lg shadow-md p-8">
+                    <h2 class="text-2xl font-bold mb-6 gradient-text">
+                        <i class="fas fa-cogs mr-2"></i>Build Model
+                    </h2>
+                    
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                        <div class="flex items-start">
+                            <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                            <div>
+                                <p class="font-semibold text-blue-700">Training Information</p>
+                                <p class="text-sm text-blue-600 mt-1">
+                                    Add at least 5-10 example sentences per keyword for best results. 
+                                    The model will learn patterns from your examples.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="trainingProgress" class="hidden mb-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-semibold text-gray-700">Training Progress</span>
+                            <span class="text-sm text-gray-500">Please wait...</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 h-3 rounded-full progress-bar" style="width: 0%" id="progressBar"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="trainingStats" class="space-y-4 mb-6">
+                        <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                            <span class="text-gray-600">
+                                <i class="fas fa-hashtag mr-2"></i>Total Keywords
+                            </span>
+                            <span id="trainKeywordCount" class="font-bold text-purple-600">0</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                            <span class="text-gray-600">
+                                <i class="fas fa-list mr-2"></i>Total Examples
+                            </span>
+                            <span id="trainExampleCount" class="font-bold text-purple-600">0</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="trainModel()" id="trainButton"
+                        class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-4 px-6 rounded-lg hover:from-orange-600 hover:to-red-600 transition-all transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-rocket mr-2"></i>Train Model Now
+                    </button>
+                    
+                    <div id="trainingResult" class="mt-6 hidden"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Tab -->
+        <div id="content-manage" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold gradient-text">
+                        <i class="fas fa-list-ul mr-2"></i>Manage Keywords
+                    </h2>
+                    <button onclick="loadKeywords()" 
+                        class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+                    </button>
+                </div>
+                
+                <div id="keywordsTable">
+                    <div class="text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-4xl text-purple-500 mb-4"></i>
+                        <p class="text-gray-500">Loading keywords...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 hidden">
+        <div class="bg-white rounded-lg shadow-xl p-4 flex items-center space-x-3 max-w-md slide-in">
+            <div id="toastIcon"></div>
+            <div>
+                <p id="toastTitle" class="font-semibold"></p>
+                <p id="toastMessage" class="text-sm text-gray-600"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let predictionCount = 0;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            setupDragAndDrop();
+        });
+
+        // Tab Switching
+        function switchTab(tab) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Remove active state from all buttons
+            document.querySelectorAll('[id^="tab-"]').forEach(btn => {
+                btn.classList.remove('text-purple-600', 'border-b-2', 'border-purple-600');
+                btn.classList.add('text-gray-500');
+            });
+            
+            // Show selected tab
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+            
+            // Activate selected button
+            const activeBtn = document.getElementById(`tab-${tab}`);
+            activeBtn.classList.remove('text-gray-500');
+            activeBtn.classList.add('text-purple-600', 'border-b-2', 'border-purple-600');
+            
+            // Load data for specific tabs
+            if (tab === 'manage') {
+                loadKeywords();
+            } else if (tab === 'train') {
+                loadTrainingStats();
+            }
+        }
+
+        // Load Stats
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_URL}/api`);
+                const data = await response.json();
+                
+                document.getElementById('keywordCount').textContent = data.keywords_count || 0;
+                document.getElementById('exampleCount').textContent = data.total_examples || 0;
+                document.getElementById('modelStatus').textContent = data.model_trained ? 'Trained ✓' : 'Not Trained';
+                document.getElementById('modelStatus').className = data.model_trained ? 
+                    'text-lg font-bold text-green-600' : 'text-lg font-bold text-gray-600';
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+                showToast('error', 'Connection Error', 'Failed to connect to API');
+            }
+        }
+
+        // Drag and Drop
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.add('border-purple-500', 'bg-purple-50');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.remove('border-purple-500', 'bg-purple-50');
+                }, false);
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }, false);
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+        }
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = formatBytes(file.size);
+                document.getElementById('fileInfo').classList.remove('hidden');
+            }
+        }
+
+        function clearFile() {
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileInfo').classList.add('hidden');
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Predict Keywords
+        async function predictKeywords() {
+            const fileInput = document.getElementById('fileInput');
+            const textInput = document.getElementById('textInput').value;
+
+            if (!fileInput.files.length && !textInput.trim()) {
+                showToast('warning', 'Input Required', 'Please upload a file or paste text');
+                return;
+            }
+
+            try {
+                let response;
+                
+                if (fileInput.files.length > 0) {
+                    const formData = new FormData();
+                    formData.append('file', fileInput.files[0]);
+                    response = await fetch(`${API_URL}/predict`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                } else {
+                    response = await fetch(`${API_URL}/predict/text?text=${encodeURIComponent(textInput)}`, {
+                        method: 'POST'
+                    });
+                }
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayPredictionResults(data);
+                    predictionCount++;
+                    document.getElementById('predictionCount').textContent = predictionCount;
+                    showToast('success', 'Analysis Complete', 'Keywords identified successfully');
+                } else {
+                    showToast('error', 'Prediction Failed', data.detail || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Prediction error:', error);
+                showToast('error', 'Error', 'Failed to analyze document');
+            }
+        }
+
+        function displayPredictionResults(data) {
+            document.getElementById('predictionPlaceholder').classList.add('hidden');
+            document.getElementById('predictionResults').classList.remove('hidden');
+            
+            document.getElementById('textPreview').textContent = data.text_preview;
+            
+            const keywordsList = document.getElementById('keywordsList');
+            keywordsList.innerHTML = '';
+            
+            data.top_keywords.forEach((kw, index) => {
+                const confidence = (kw.confidence * 100).toFixed(1);
+                const color = getColorByRank(index);
+                
+                const item = document.createElement('div');
+                item.className = 'slide-in';
+                item.style.animationDelay = `${index * 0.1}s`;
+                item.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full ${color.bg} ${color.text} font-bold mr-3">
+                                ${index + 1}
+                            </span>
+                            <span class="font-semibold text-gray-700">${kw.keyword}</span>
+                        </div>
+                        <span class="text-sm font-semibold ${color.text}">${confidence}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="${color.bar} h-2 rounded-full transition-all duration-500" style="width: ${confidence}%"></div>
+                    </div>
+                `;
+                keywordsList.appendChild(item);
+            });
+        }
+
+        function getColorByRank(index) {
+            const colors = [
+                { bg: 'bg-purple-100', text: 'text-purple-600', bar: 'bg-gradient-to-r from-purple-500 to-indigo-500' },
+                { bg: 'bg-blue-100', text: 'text-blue-600', bar: 'bg-gradient-to-r from-blue-500 to-cyan-500' },
+                { bg: 'bg-green-100', text: 'text-green-600', bar: 'bg-gradient-to-r from-green-500 to-emerald-500' },
+                { bg: 'bg-yellow-100', text: 'text-yellow-600', bar: 'bg-gradient-to-r from-yellow-500 to-orange-500' },
+                { bg: 'bg-red-100', text: 'text-red-600', bar: 'bg-gradient-to-r from-red-500 to-pink-500' }
+            ];
+            return colors[index] || colors[colors.length - 1];
+        }
+
+        // Add Training Data
+        async function addTrainingData(event) {
+            event.preventDefault();
+            
+            const keyword = document.getElementById('trainKeyword').value.trim();
+            const sentencesText = document.getElementById('trainSentences').value.trim();
+            const sentences = sentencesText.split('\n').filter(s => s.trim().length > 0);
+
+            if (sentences.length === 0) {
+                showToast('warning', 'No Examples', 'Please enter at least one example sentence');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/train/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ keyword, sentences })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showToast('success', 'Data Added', `Added ${sentences.length} examples for "${keyword}"`);
+                    document.getElementById('trainKeyword').value = '';
+                    document.getElementById('trainSentences').value = '';
+                    loadStats();
+                    loadTrainingStats();
+                } else {
+                    showToast('error', 'Failed', data.detail || 'Failed to add training data');
+                }
+            } catch (error) {
+                console.error('Training data error:', error);
+                showToast('error', 'Error', 'Failed to add training data');
+            }
+        }
+
+        // Load Training Stats
+        async function loadTrainingStats() {
+            try {
+                const response = await fetch(`${API_URL}/api`);
+                const data = await response.json();
+                
+                document.getElementById('trainKeywordCount').textContent = data.keywords_count || 0;
+                document.getElementById('trainExampleCount').textContent = data.total_examples || 0;
+            } catch (error) {
+                console.error('Failed to load training stats:', error);
+            }
+        }
+
+        // Train Model
+        async function trainModel() {
+            const button = document.getElementById('trainButton');
+            const progressDiv = document.getElementById('trainingProgress');
+            const progressBar = document.getElementById('progressBar');
+            const resultDiv = document.getElementById('trainingResult');
+            
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Training...';
+            progressDiv.classList.remove('hidden');
+            resultDiv.classList.add('hidden');
+            
+            // Animate progress bar
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                progressBar.style.width = `${Math.min(progress, 90)}%`;
+            }, 100);
+
+            try {
+                const response = await fetch(`${API_URL}/train/build`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+                
+                clearInterval(interval);
+                progressBar.style.width = '100%';
+                
+                setTimeout(() => {
+                    progressDiv.classList.add('hidden');
+                    progressBar.style.width = '0%';
+                    
+                    if (response.ok) {
+                        resultDiv.innerHTML = `
+                            <div class="bg-green-50 border-l-4 border-green-500 p-4">
+                                <div class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 text-2xl mr-3"></i>
+                                    <div>
+                                        <p class="font-semibold text-green-700">Training Successful!</p>
+                                        <p class="text-sm text-green-600 mt-1">
+                                            Model trained with ${data.total_keywords} keywords and ${data.total_examples} examples
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        resultDiv.classList.remove('hidden');
+                        showToast('success', 'Training Complete', 'Model is ready for predictions');
+                        loadStats();
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="bg-red-50 border-l-4 border-red-500 p-4">
+                                <div class="flex items-start">
+                                    <i class="fas fa-exclamation-triangle text-red-500 text-2xl mr-3"></i>
+                                    <div>
+                                        <p class="font-semibold text-red-700">Training Failed</p>
+                                        <p class="text-sm text-red-600 mt-1">${data.detail}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        resultDiv.classList.remove('hidden');
+                        showToast('error', 'Training Failed', data.detail);
+                    }
+                }, 500);
+            } catch (error) {
+                clearInterval(interval);
+                console.error('Training error:', error);
+                showToast('error', 'Error', 'Failed to train model');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-rocket mr-2"></i>Train Model Now';
+            }
+        }
+
+        // Load Keywords
+        async function loadKeywords() {
+            const table = document.getElementById('keywordsTable');
+            table.innerHTML = '<div class="text-center py-12"><i class="fas fa-spinner fa-spin text-4xl text-purple-500 mb-4"></i><p class="text-gray-500">Loading keywords...</p></div>';
+
+            try {
+                const response = await fetch(`${API_URL}/keywords`);
+                const data = await response.json();
+
+                if (data.keywords.length === 0) {
+                    table.innerHTML = `
+                        <div class="text-center py-12">
+                            <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-400 text-lg">No keywords yet</p>
+                            <p class="text-gray-400 text-sm mt-2">Start by adding training data in the Train Model tab</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200">';
+                html += `
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keyword</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Examples</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                `;
+
+                data.keywords.forEach(kw => {
+                    html += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <i class="fas fa-tag text-purple-500 mr-2"></i>
+                                    <span class="font-semibold text-gray-900">${kw.keyword}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                    ${kw.example_count} examples
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <button onclick="deleteKeyword('${kw.keyword}')" 
+                                    class="text-red-600 hover:text-red-900 font-semibold">
+                                    <i class="fas fa-trash mr-1"></i>Delete
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table></div>';
+                table.innerHTML = html;
+            } catch (error) {
+                console.error('Failed to load keywords:', error);
+                table.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+                        <p class="text-red-500">Failed to load keywords</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Delete Keyword
+        async function deleteKeyword(keyword) {
+            if (!confirm(`Are you sure you want to delete "${keyword}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/keywords/${encodeURIComponent(keyword)}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showToast('success', 'Deleted', `Keyword "${keyword}" removed`);
+                    loadKeywords();
+                    loadStats();
+                } else {
+                    showToast('error', 'Failed', 'Could not delete keyword');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                showToast('error', 'Error', 'Failed to delete keyword');
+            }
+        }
+
+        // Toast Notifications
+        function showToast(type, title, message) {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toastIcon');
+            const toastTitle = document.getElementById('toastTitle');
+            const toastMessage = document.getElementById('toastMessage');
+
+            const icons = {
+                success: '<i class="fas fa-check-circle text-green-500 text-2xl"></i>',
+                error: '<i class="fas fa-times-circle text-red-500 text-2xl"></i>',
+                warning: '<i class="fas fa-exclamation-triangle text-yellow-500 text-2xl"></i>',
+                info: '<i class="fas fa-info-circle text-blue-500 text-2xl"></i>'
+            };
+
+            toastIcon.innerHTML = icons[type] || icons.info;
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
+
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
