@@ -1,0 +1,5 @@
+flask
+chromadb
+sentence-transformers
+numpy # Used by sentence-transformers
+gunicorn # Good practice for production WSGI server

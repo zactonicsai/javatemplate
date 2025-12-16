@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  semantic_analyzer:
+    build: .
+    # Map container port 5000 to host port 5000
+    ports:
+      - "8100:5000"
+    # Mount the current directory (where app.py, templates, etc. are) 
+    # for easy development (optional, but useful)
+    volumes:
+      - .:/app
+    # Restart the container if it fails
+    restart: always
+    environment:
+      # Set a high timeout for the webserver, as model loading and
+      # embedding can be slow on the first run or for large documents.
+      GUNICORN_TIMEOUT: 120
