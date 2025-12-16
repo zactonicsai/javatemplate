@@ -148,3 +148,6 @@ docxconvert/.DS_Store
 .DS_Store
 docxconverter/target
 docxconverter/.gradle/
+fasttext/models/keyword_model.bin
+fasttext/models/keyword_model.vec
+fasttext/data/training_data.json

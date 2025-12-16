@@ -11,15 +11,12 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /tmp
 #RUN git clone https://github.com/facebookresearch/fastText.git && \
 COPY src .
-RUN    cd fastText && \
-    make && \
+RUN make && \
     cp fasttext /usr/local/bin/ && \
-    chmod +x /usr/local/bin/fasttext && \
-    cd / && \
-    rm -rf /tmp/fastText
+    chmod +x /usr/local/bin/fasttext 
 
 # Verify FastText is installed
-RUN fasttext --help
+#RUN ls -l  fasttext --help
 
 # Install Python dependencies
 RUN pip install --no-cache-dir \
