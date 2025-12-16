@@ -18,13 +18,18 @@ public class SemanticKeywordFinder {
 
     // Verification keywords (same as Python version)
     private static final List<String> VERIFICATION_KEYWORDS = Arrays.asList(
-        "long-term financial investment strategy and capital gains",
-        "analysis of software API documentation and server architecture",
-        "detailed review of the contract clauses and legal regulations",
-        "mortgage loan interest rates and associated debt",
-        "cloud computing infrastructure and database optimization",
-        "dispute litigation and jurisdiction rules"
-    );
+            "Keto", "Paleo", "Vegan", "Vegetarian", "Mediterranean Diet", "Whole30", "Pescatarian", "Flexitarian",
+            "Low Carb", "High Protein", "Atkins", "Intermittent Fasting", "Carnivore Diet", "Plant Based", "DASH Diet",
+            "Gluten Free", "Dairy Free", "Sugar Free", "Raw Food", "Low FODMAP", "Macrobiotic", "Calorie Counting",
+            "Nutrient Dense", "Clean Eating", "Anti Inflammatory", "Baking", "Roasting", "Frying", "Sautéing",
+            "Grilling", "Steaming", "Boiling", "Poaching", "Braising", "Stewing", "Broiling", "Barbecue", "Smoking",
+            "Sous Vide", "Air Frying", "Slow Cooking", "Pressure Cooking", "Fermenting", "Pickling", "Canning",
+            "Blanching", "Caramelizing", "Glazing", "Marinating", "Deep Frying", "Pan Searing", "Wok Cooking",
+            "Knife Skills", "Mise en Place", "Meal Prep", "Organic", "Non GMO", "Whole Foods", "Processed Foods",
+            "Superfoods", "Comfort Food", "Street Food", "Fine Dining", "Farm to Table", "Sustainable",
+            "Locally Sourced", "Seasonal", "Seafood", "Poultry", "Red Meat", "Grains", "Legumes", "Root Vegetables",
+            "Leafy Greens", "Cruciferous Vegetables", "Citrus", "Berries", "Stone Fruit", "Nuts", "Seeds", "Dairy",
+            "Artisan Cheese", "Spices", "Fresh Herbs", "Sauces", "Condiments", "Healthy Fats", "Probiotics", "Fiber");
 
     private final EmbeddingEngine embeddingEngine;
 
@@ -43,7 +48,7 @@ public class SemanticKeywordFinder {
                 System.exit(0);
             }
         }
-        
+
         if (args.length < 1) {
             printUsage();
             System.exit(1);
@@ -90,7 +95,7 @@ public class SemanticKeywordFinder {
         try {
             // Read file content
             String documentText = Files.readString(Path.of(filePath));
-            
+
             if (documentText.isBlank()) {
                 System.err.println("{\"error\": \"Document content is empty.\"}");
                 System.exit(1);
@@ -98,7 +103,7 @@ public class SemanticKeywordFinder {
 
             // Process document
             List<String> sentences = splitIntoSentences(documentText);
-            
+
             if (sentences.isEmpty()) {
                 System.err.println("{\"error\": \"Could not split the document into sentences.\"}");
                 System.exit(1);
@@ -106,21 +111,20 @@ public class SemanticKeywordFinder {
 
             // Build vocabulary and compute embeddings
             embeddingEngine.buildVocabulary(sentences, VERIFICATION_KEYWORDS);
-            
+
             List<double[]> sentenceEmbeddings = sentences.stream()
-                .map(embeddingEngine::embed)
-                .collect(Collectors.toList());
-            
+                    .map(embeddingEngine::embed)
+                    .collect(Collectors.toList());
+
             List<double[]> keywordEmbeddings = VERIFICATION_KEYWORDS.stream()
-                .map(embeddingEngine::embed)
-                .collect(Collectors.toList());
+                    .map(embeddingEngine::embed)
+                    .collect(Collectors.toList());
 
             // Find semantic matches
             SearchResults results = findSemanticMatches(
-                sentences, sentenceEmbeddings,
-                VERIFICATION_KEYWORDS, keywordEmbeddings,
-                numResults, numTopSentences
-            );
+                    sentences, sentenceEmbeddings,
+                    VERIFICATION_KEYWORDS, keywordEmbeddings,
+                    numResults, numTopSentences);
 
             // Print results
             printResults(results, sentences);
@@ -138,11 +142,11 @@ public class SemanticKeywordFinder {
         // Pattern similar to Python version: split on sentence-ending punctuation
         // followed by whitespace, but avoid splitting on abbreviations
         String pattern = "(?<!\\w\\.\\w.)(?<![A-Z][a-z]\\.)(?<=\\.|\\?|!)\\s+";
-        
+
         return Arrays.stream(text.trim().split(pattern))
-            .map(String::trim)
-            .filter(s -> !s.isEmpty())
-            .collect(Collectors.toList());
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
     }
 
     /**
@@ -152,7 +156,7 @@ public class SemanticKeywordFinder {
             List<String> sentences, List<double[]> sentenceEmbeddings,
             List<String> keywords, List<double[]> keywordEmbeddings,
             int numResults, int numTopSentences) {
-        
+
         Map<String, KeywordMatch> keywordDetails = new LinkedHashMap<>();
         List<OverallMatch> overallBestMatches = new ArrayList<>();
 
@@ -173,29 +177,28 @@ public class SemanticKeywordFinder {
 
             // Take top N sentences
             List<SentenceScore> topSentences = sentenceScores.stream()
-                .limit(numTopSentences)
-                .collect(Collectors.toList());
+                    .limit(numTopSentences)
+                    .collect(Collectors.toList());
 
             // Store keyword match details
             KeywordMatch match = new KeywordMatch();
             match.topMatchSentence = topSentences.isEmpty() ? "" : topSentences.get(0).sentence;
             match.topMatchSimilarity = topSentences.isEmpty() ? 0 : topSentences.get(0).similarity;
             match.allMatchedSentences = topSentences.stream()
-                .map(ss -> ss.sentence)
-                .collect(Collectors.toList());
+                    .map(ss -> ss.sentence)
+                    .collect(Collectors.toList());
             match.allSimilarities = topSentences.stream()
-                .map(ss -> ss.similarity)
-                .collect(Collectors.toList());
-            
+                    .map(ss -> ss.similarity)
+                    .collect(Collectors.toList());
+
             keywordDetails.put(keyword, match);
 
             // Track for overall ranking
             if (!topSentences.isEmpty()) {
                 overallBestMatches.add(new OverallMatch(
-                    keyword,
-                    topSentences.get(0).similarity,
-                    topSentences.get(0).sentence
-                ));
+                        keyword,
+                        topSentences.get(0).similarity,
+                        topSentences.get(0).sentence));
             }
         }
 
@@ -204,8 +207,8 @@ public class SemanticKeywordFinder {
 
         // Get top N keywords overall
         List<OverallMatch> topKeywords = overallBestMatches.stream()
-            .limit(numResults)
-            .collect(Collectors.toList());
+                .limit(numResults)
+                .collect(Collectors.toList());
 
         return new SearchResults(topKeywords, keywordDetails);
     }
@@ -241,30 +244,22 @@ public class SemanticKeywordFinder {
     private void printResults(SearchResults results, List<String> sentences) {
         StringBuilder json = new StringBuilder();
         json.append("[\n");
-        
+
         for (int i = 0; i < results.topKeywords.size(); i++) {
             OverallMatch match = results.topKeywords.get(i);
-            json.append("  {\n");
-            json.append("    \"keyword\": \"").append(escapeJson(match.keyword)).append("\",\n");
-            json.append("    \"similarity\": ").append(String.format("%.4f", match.similarity)).append(",\n");
-            json.append("    \"matched_sentence\": \"").append(escapeJson(match.matchedSentence)).append("\"\n");
-            json.append("  }");
-            if (i < results.topKeywords.size() - 1) {
-                json.append(",");
-            }
-            json.append("\n");
+            json.append(match.keyword + "\n");
         }
-        
+
         json.append("]");
         System.out.println(json);
     }
-    
+
     private String escapeJson(String text) {
         return text.replace("\\", "\\\\")
-                   .replace("\"", "\\\"")
-                   .replace("\n", "\\n")
-                   .replace("\r", "\\r")
-                   .replace("\t", "\\t");
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
 
     // --- Inner Classes ---
@@ -316,6 +311,7 @@ public class SemanticKeywordFinder {
  */
 interface EmbeddingEngine {
     void buildVocabulary(List<String> sentences, List<String> keywords);
+
     double[] embed(String text);
 }
 
@@ -323,7 +319,7 @@ interface EmbeddingEngine {
  * TF-IDF based embedding engine - lightweight alternative to neural embeddings
  */
 class TfIdfEmbeddingEngine implements EmbeddingEngine {
-    
+
     private Map<String, Integer> vocabulary;
     private Map<String, Double> idfScores;
     private int vocabSize;
@@ -342,7 +338,7 @@ class TfIdfEmbeddingEngine implements EmbeddingEngine {
         for (String text : allTexts) {
             Set<String> textTerms = tokenize(text);
             terms.addAll(textTerms);
-            
+
             // Count document frequency
             for (String term : textTerms) {
                 docFreq.merge(term, 1, Integer::sum);
@@ -369,11 +365,11 @@ class TfIdfEmbeddingEngine implements EmbeddingEngine {
     @Override
     public double[] embed(String text) {
         double[] embedding = new double[vocabSize];
-        
+
         // Tokenize and count term frequencies
         List<String> tokens = new ArrayList<>(tokenize(text));
         Map<String, Long> termFreq = tokens.stream()
-            .collect(Collectors.groupingBy(t -> t, Collectors.counting()));
+                .collect(Collectors.groupingBy(t -> t, Collectors.counting()));
 
         // Calculate TF-IDF for each term
         for (Map.Entry<String, Long> entry : termFreq.entrySet()) {
@@ -406,7 +402,7 @@ class TfIdfEmbeddingEngine implements EmbeddingEngine {
         return Arrays.stream(text.toLowerCase()
                 .replaceAll("[^a-zA-Z0-9\\s]", " ")
                 .split("\\s+"))
-            .filter(s -> !s.isEmpty() && s.length() > 1)
-            .collect(Collectors.toSet());
+                .filter(s -> !s.isEmpty() && s.length() > 1)
+                .collect(Collectors.toSet());
     }
 }
