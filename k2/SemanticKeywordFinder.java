@@ -1,19 +1,9 @@
-
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.*;
 
-/**
- * Semantic Keyword Finder - Command-line tool for finding semantic matches
- * between predefined keywords and document content.
- * 
- * This is a Java port of the Python Flask application that uses:
- * - TF-IDF based embeddings for semantic similarity
- * - Cosine similarity for matching
- * 
- * No external dependencies required - pure Java implementation.
- */
 public class SemanticKeywordFinder {
 
     // Verification keywords (same as Python version)
@@ -32,6 +22,7 @@ public class SemanticKeywordFinder {
             "Artisan Cheese", "Spices", "Fresh Herbs", "Sauces", "Condiments", "Healthy Fats", "Probiotics", "Fiber");
 
     private final EmbeddingEngine embeddingEngine;
+    private volatile boolean isProcessing = false;
 
     public SemanticKeywordFinder() {
         this.embeddingEngine = new TfIdfEmbeddingEngine();
@@ -68,7 +59,7 @@ public class SemanticKeywordFinder {
         }
 
         SemanticKeywordFinder finder = new SemanticKeywordFinder();
-        finder.processFile(filePath, numResults, numTopSentences);
+        finder.processFileAsync(filePath, numResults, numTopSentences);
     }
 
     private static void printUsage() {
@@ -89,24 +80,81 @@ public class SemanticKeywordFinder {
     }
 
     /**
+     * Process a document file asynchronously with progress indicator
+     */
+    public void processFileAsync(String filePath, int numResults, int numTopSentences) {
+        isProcessing = true;
+
+        // Start the progress indicator in a separate thread
+        CompletableFuture<Void> progressIndicator = CompletableFuture.runAsync(this::showProgressIndicator);
+
+        // Process the file asynchronously
+        CompletableFuture<SearchResults> processingFuture = CompletableFuture.supplyAsync(() -> 
+            processFile(filePath, numResults, numTopSentences)
+        );
+
+        // When processing completes, stop the indicator and print results
+        processingFuture
+            .whenComplete((results, error) -> {
+                isProcessing = false;
+                
+                // Give the progress indicator time to stop cleanly
+                try {
+                    progressIndicator.get(100, TimeUnit.MILLISECONDS);
+                } catch (Exception ignored) {}
+                
+                // Clear the progress line
+                System.out.print("\r" + " ".repeat(50) + "\r");
+                System.out.flush();
+                
+                if (error != null) {
+                    System.err.println("{\"error\": \"" + error.getMessage() + "\"}");
+                    System.exit(1);
+                } else if (results != null) {
+                    printResults(results);
+                }
+            })
+            .join(); // Wait for completion
+    }
+
+    /**
+     * Show a spinning progress indicator while processing
+     */
+    private void showProgressIndicator() {
+        String[] spinnerFrames = {"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"};
+        int frameIndex = 0;
+        
+        while (isProcessing) {
+            System.out.print("\r" + spinnerFrames[frameIndex] + " Working on it...");
+            System.out.flush();
+            frameIndex = (frameIndex + 1) % spinnerFrames.length;
+            
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
+
+    /**
      * Process a document file and find semantic keyword matches
      */
-    public void processFile(String filePath, int numResults, int numTopSentences) {
+    public SearchResults processFile(String filePath, int numResults, int numTopSentences) {
         try {
             // Read file content
             String documentText = Files.readString(Path.of(filePath));
 
             if (documentText.isBlank()) {
-                System.err.println("{\"error\": \"Document content is empty.\"}");
-                System.exit(1);
+                throw new RuntimeException("Document content is empty.");
             }
 
             // Process document
             List<String> sentences = splitIntoSentences(documentText);
 
             if (sentences.isEmpty()) {
-                System.err.println("{\"error\": \"Could not split the document into sentences.\"}");
-                System.exit(1);
+                throw new RuntimeException("Could not split the document into sentences.");
             }
 
             // Build vocabulary and compute embeddings
@@ -121,17 +169,13 @@ public class SemanticKeywordFinder {
                     .collect(Collectors.toList());
 
             // Find semantic matches
-            SearchResults results = findSemanticMatches(
+            return findSemanticMatches(
                     sentences, sentenceEmbeddings,
                     VERIFICATION_KEYWORDS, keywordEmbeddings,
                     numResults, numTopSentences);
 
-            // Print results
-            printResults(results, sentences);
-
         } catch (IOException e) {
-            System.err.println("{\"error\": \"" + e.getMessage() + "\"}");
-            System.exit(1);
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
@@ -241,17 +285,40 @@ public class SemanticKeywordFinder {
     /**
      * Print results as JSON
      */
-    private void printResults(SearchResults results, List<String> sentences) {
+    private void printResults(SearchResults results) {
+        System.out.println("\n✓ Analysis complete!\n");
+        System.out.println("Top Matching Keywords:");
+        System.out.println("=".repeat(50));
+        
+        for (int i = 0; i < results.topKeywords.size(); i++) {
+            OverallMatch match = results.topKeywords.get(i);
+            System.out.printf("%d. %s (similarity: %.4f)%n", 
+                i + 1, match.keyword, match.similarity);
+            System.out.printf("   Matched: \"%s\"%n%n", 
+                truncate(match.matchedSentence, 60));
+        }
+        
+        // Also output JSON format
+      
         StringBuilder json = new StringBuilder();
         json.append("[\n");
 
         for (int i = 0; i < results.topKeywords.size(); i++) {
             OverallMatch match = results.topKeywords.get(i);
-            json.append(match.keyword + "\n");
+            json.append(match.keyword + ",");
+        
+            json.append("\n");
         }
 
         json.append("]");
         System.out.println(json);
+    }
+
+    private String truncate(String text, int maxLength) {
+        if (text.length() <= maxLength) {
+            return text;
+        }
+        return text.substring(0, maxLength - 3) + "...";
     }
 
     private String escapeJson(String text) {
