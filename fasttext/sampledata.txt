@@ -1,0 +1,150 @@
+__label__fruits The fresh apple has a crisp texture and sweet taste
+__label__fruits Ripe bananas are perfect for smoothies and baking
+__label__fruits Juicy oranges are packed with vitamin C and citrus flavor
+__label__fruits Sweet strawberries are delicious in desserts and salads
+__label__fruits Tropical mangoes have a rich, sweet flavor and smooth texture
+__label__fruits Fresh blueberries are great for breakfast and antioxidants
+__label__fruits Watermelon slices are refreshing on hot summer days
+__label__fruits Grapes make a perfect healthy snack throughout the day
+__label__fruits Pineapple chunks add tropical sweetness to any dish
+__label__fruits Ripe peaches are soft, juicy, and incredibly sweet
+__label__fruits Kiwi fruit has a unique tangy flavor and bright green color
+__label__fruits Cherries are small, sweet, and perfect for snacking
+__label__fruits Plums have a sweet and slightly tart flavor profile
+__label__fruits Fresh raspberries are delicate with intense berry flavor
+__label__fruits Cantaloupe melon is sweet and refreshing when chilled
+__label__vegetables Fresh broccoli florets are rich in vitamins and minerals
+__label__vegetables Crispy carrots are crunchy and naturally sweet vegetables
+__label__vegetables Leafy spinach is packed with iron and nutrients
+__label__vegetables Bell peppers come in many colors and add crunch to salads
+__label__vegetables Fresh tomatoes are technically fruit but used as vegetables
+__label__vegetables Cucumber slices are refreshing and hydrating vegetables
+__label__vegetables Sweet corn on the cob is a classic summer vegetable
+__label__vegetables Green beans are tender and perfect for stir-fry dishes
+__label__vegetables Cauliflower can be roasted, steamed, or made into rice
+__label__vegetables Brussels sprouts become crispy and delicious when roasted
+__label__vegetables Fresh asparagus spears are tender and nutritious
+__label__vegetables Zucchini is a versatile summer squash vegetable
+__label__vegetables Lettuce forms the base of most fresh salads
+__label__vegetables Red onions add flavor and crunch to many dishes
+__label__vegetables Garlic cloves provide aromatic flavor to countless recipes
+__label__proteins Grilled chicken breast is lean and high in protein
+__label__proteins Fresh salmon is rich in omega-3 fatty acids
+__label__proteins Beef steak is a classic protein-rich meat option
+__label__proteins Scrambled eggs provide complete protein for breakfast
+__label__proteins Black beans are an excellent plant-based protein source
+__label__proteins Grilled pork chops are flavorful and satisfying
+__label__proteins Tuna fish is packed with protein and omega-3s
+__label__proteins Turkey breast is lean meat perfect for sandwiches
+__label__proteins Tofu is a versatile plant-based protein alternative
+__label__proteins Shrimp is low in calories but high in protein
+__label__proteins Chickpeas provide protein and fiber in many dishes
+__label__proteins Lentils are nutritious legumes full of protein
+__label__proteins Ground beef is versatile for burgers and tacos
+__label__proteins Almonds and nuts offer protein and healthy fats
+__label__proteins Greek yogurt is creamy and protein-packed
+__label__grains Brown rice is a nutritious whole grain staple
+__label__grains Fresh whole wheat bread provides fiber and energy
+__label__grains Quinoa is a complete protein grain from South America
+__label__grains Oatmeal makes a hearty and healthy breakfast option
+__label__grains Pasta made from durum wheat is perfect for Italian dishes
+__label__grains Barley grain adds texture to soups and stews
+__label__grains Whole grain crackers are great for healthy snacking
+__label__grains Corn tortillas are a staple in Mexican cuisine
+__label__grains Bulgur wheat is used in tabbouleh and Middle Eastern dishes
+__label__grains White rice is a versatile side dish for many meals
+__label__grains Whole grain cereal provides morning nutrition and energy
+__label__grains Couscous is quick-cooking and perfect for salads
+__label__grains Rye bread has a distinct hearty flavor profile
+__label__grains Millet is an ancient grain with mild nutty flavor
+__label__grains Wild rice has a chewy texture and earthy taste
+__label__dairy Fresh milk is rich in calcium and vitamin D
+__label__dairy Aged cheddar cheese has sharp, intense flavor
+__label__dairy Greek yogurt is thick, creamy, and protein-rich
+__label__dairy Fresh mozzarella cheese is soft and mild in flavor
+__label__dairy Butter adds rich flavor to baked goods and cooking
+__label__dairy Sour cream is tangy and perfect for topping dishes
+__label__dairy Swiss cheese has distinctive holes and nutty flavor
+__label__dairy Heavy cream makes sauces rich and velvety smooth
+__label__dairy Cottage cheese is high in protein and low in fat
+__label__dairy Parmesan cheese is aged hard cheese with sharp taste
+__label__dairy Ice cream is a frozen dairy dessert loved worldwide
+__label__dairy Cream cheese is soft and spreadable for bagels
+__label__dairy Blue cheese has a strong, distinctive moldy flavor
+__label__dairy Whole milk yogurt is creamy and good for digestion
+__label__dairy Goat cheese has a tangy taste and creamy texture
+__label__desserts Chocolate cake is rich, moist, and decadent
+__label__desserts Vanilla ice cream is a classic frozen dessert
+__label__desserts Apple pie with cinnamon is a traditional American dessert
+__label__desserts Chocolate chip cookies are chewy and delicious
+__label__desserts Strawberry cheesecake is creamy and fruity
+__label__desserts Brownies are fudgy chocolate baked treats
+__label__desserts Tiramisu is an Italian coffee-flavored dessert
+__label__desserts Creme brulee has a caramelized sugar topping
+__label__desserts Macarons are delicate French sandwich cookies
+__label__desserts Banana pudding is a creamy Southern classic
+__label__desserts Donuts are fried dough treats with various toppings
+__label__desserts Cupcakes are individual portion cakes with frosting
+__label__desserts Panna cotta is a smooth Italian cream dessert
+__label__desserts Lemon tart has a tangy citrus filling
+__label__desserts Churros are fried dough pastries with cinnamon sugar
+__label__beverages Fresh orange juice is vitamin C rich breakfast drink
+__label__beverages Hot coffee provides morning caffeine and energy
+__label__beverages Green tea is full of antioxidants and healthy compounds
+__label__beverages Fresh lemonade is tart, sweet, and refreshing
+__label__beverages Smoothies blend fruits and vegetables into drinks
+__label__beverages Sparkling water is carbonated and refreshing without calories
+__label__beverages Hot chocolate is a warm, comforting chocolate drink
+__label__beverages Iced tea is perfect for cooling down on hot days
+__label__beverages Coconut water is naturally hydrating and electrolyte-rich
+__label__beverages Fresh apple juice is sweet and naturally flavorful
+__label__beverages Herbal tea offers various flavors without caffeine
+__label__beverages Milkshakes are thick, creamy blended ice cream drinks
+__label__beverages Fresh carrot juice is nutritious and naturally sweet
+__label__beverages Kombucha is a fermented tea with probiotic benefits
+__label__beverages Cranberry juice is tart and good for urinary health
+__label__snacks Potato chips are crispy, salty, and crunchy
+__label__snacks Popcorn is a whole grain snack perfect for movies
+__label__snacks Pretzels are baked snacks with a salty coating
+__label__snacks Trail mix combines nuts, dried fruit, and chocolate
+__label__snacks Granola bars are convenient portable energy snacks
+__label__snacks Rice cakes are light and low-calorie crunchy snacks
+__label__snacks String cheese is convenient protein-packed snack
+__label__snacks Hummus with vegetables makes a healthy snack option
+__label__snacks Peanut butter on celery is crunchy and satisfying
+__label__snacks Crackers with cheese are a classic snack combination
+__label__snacks Dried fruit provides natural sweetness and fiber
+__label__snacks Energy balls are no-bake nutritious snack bites
+__label__snacks Roasted chickpeas are crunchy high-protein snacks
+__label__snacks Apple slices with almond butter are nutritious
+__label__snacks Dark chocolate squares satisfy sweet cravings healthily
+__label__seafood Fresh salmon fillet is rich in omega-3 fatty acids
+__label__seafood Grilled shrimp are low in calories and high in protein
+__label__seafood Tuna steaks are meaty fish perfect for grilling
+__label__seafood Cod fish has mild flavor and flaky white texture
+__label__seafood Lobster is a premium seafood delicacy with sweet meat
+__label__seafood Crab legs are sweet and tender shellfish
+__label__seafood Mussels are small shellfish cooked in wine and garlic
+__label__seafood Oysters are briny mollusks often served raw
+__label__seafood Scallops are sweet, tender, and quick to cook
+__label__seafood Tilapia is mild white fish that's budget-friendly
+__label__seafood Halibut has firm texture and mild sweet flavor
+__label__seafood Anchovies are small salty fish used in Caesar dressing
+__label__seafood Sardines are nutritious small fish packed with omega-3s
+__label__seafood Clams can be steamed, fried, or made into chowder
+__label__seafood Swordfish steaks are firm and meaty for grilling
+__label__condiments Ketchup is a sweet tomato-based sauce for fries
+__label__condiments Yellow mustard adds tangy flavor to sandwiches
+__label__condiments Mayonnaise is a creamy emulsion for sandwiches and salads
+__label__condiments Soy sauce is salty fermented condiment from soybeans
+__label__condiments Hot sauce adds spicy heat to many dishes
+__label__condiments Ranch dressing is creamy herb-flavored salad dressing
+__label__condiments Barbecue sauce is sweet and tangy for grilled meats
+__label__condiments Honey mustard combines sweetness with tangy mustard
+__label__condiments Salsa is a chunky tomato-based Mexican condiment
+__label__condiments Teriyaki sauce is sweet and savory Asian glaze
+__label__condiments Worcestershire sauce adds umami depth to recipes
+__label__condiments Relish is chopped pickled cucumber condiment
+__label__condiments Sriracha is spicy chili sauce with garlic
+__label__condiments Pesto is basil-based Italian sauce with pine nuts
+__label__condiments Tahini is sesame seed paste used in hummus
