@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /tmp
 #RUN git clone https://github.com/facebookresearch/fastText.git && \
 COPY src .
+COPY requirements.txt .
 RUN make && \
     cp fasttext /usr/local/bin/ && \
     chmod +x /usr/local/bin/fasttext 
@@ -19,11 +20,8 @@ RUN make && \
 #RUN ls -l  fasttext --help
 
 # Install Python dependencies
-RUN pip install --no-cache-dir \
-    fastapi \
-    uvicorn \
-    python-multipart \
-    pydantic
+RUN pip install --no-cache-dir -r requirements.txt
+
 
 # Create app directory
 WORKDIR /app
@@ -40,4 +38,4 @@ RUN mkdir -p /app/models /app/data /app/temp
 EXPOSE 8000
 
 # Run the server
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000","--log-level", "debug"]

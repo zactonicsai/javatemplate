@@ -3,13 +3,28 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Optional
 import os
 import subprocess
 import json
 import tempfile
 import shutil
 from pathlib import Path
+import io
+
+# PDF processing
+try:
+    import PyPDF2
+    PDF_SUPPORT = True
+except ImportError:
+    PDF_SUPPORT = False
+
+# Alternative PDF library (pdfplumber is often better for complex PDFs)
+try:
+    import pdfplumber
+    PDFPLUMBER_SUPPORT = True
+except ImportError:
+    PDFPLUMBER_SUPPORT = False
 
 app = FastAPI(title="FastText Keyword Classifier API")
 
@@ -38,9 +53,100 @@ class TrainingData(BaseModel):
     sentences: List[str]
 
 
+class TextInput(BaseModel):
+    text: str
+
+
+class KeywordPrediction(BaseModel):
+    keyword: str
+    confidence: float
+
+
 class PredictionResponse(BaseModel):
-    top_keywords: List[Dict[str, float]]
+    top_keywords: List[KeywordPrediction]
     text_preview: str
+    source_type: Optional[str] = "text"
+    page_count: Optional[int] = None
+
+
+def extract_text_from_pdf_pypdf2(file_content: bytes) -> tuple[str, int]:
+    """Extract text from PDF using PyPDF2"""
+    text_parts = []
+    page_count = 0
+    
+    try:
+        pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_content))
+        page_count = len(pdf_reader.pages)
+        
+        for page in pdf_reader.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text_parts.append(page_text)
+        
+        return '\n'.join(text_parts), page_count
+    except Exception as e:
+        raise ValueError(f"PyPDF2 extraction failed: {str(e)}")
+
+
+def extract_text_from_pdf_pdfplumber(file_content: bytes) -> tuple[str, int]:
+    """Extract text from PDF using pdfplumber (better for complex layouts)"""
+    text_parts = []
+    page_count = 0
+    
+    try:
+        with pdfplumber.open(io.BytesIO(file_content)) as pdf:
+            page_count = len(pdf.pages)
+            
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text_parts.append(page_text)
+        
+        return '\n'.join(text_parts), page_count
+    except Exception as e:
+        raise ValueError(f"pdfplumber extraction failed: {str(e)}")
+
+
+def extract_text_from_pdf(file_content: bytes) -> tuple[str, int]:
+    """
+    Extract text from PDF using available libraries.
+    Tries pdfplumber first (better quality), falls back to PyPDF2.
+    Returns tuple of (extracted_text, page_count)
+    """
+    if not PDF_SUPPORT and not PDFPLUMBER_SUPPORT:
+        raise HTTPException(
+            status_code=500,
+            detail="PDF support not available. Install PyPDF2 or pdfplumber: pip install PyPDF2 pdfplumber"
+        )
+    
+    # Try pdfplumber first (generally better text extraction)
+    if PDFPLUMBER_SUPPORT:
+        try:
+            return extract_text_from_pdf_pdfplumber(file_content)
+        except ValueError:
+            # Fall back to PyPDF2 if pdfplumber fails
+            if PDF_SUPPORT:
+                return extract_text_from_pdf_pypdf2(file_content)
+            raise
+    
+    # Use PyPDF2 if pdfplumber not available
+    if PDF_SUPPORT:
+        return extract_text_from_pdf_pypdf2(file_content)
+    
+    raise HTTPException(status_code=500, detail="No PDF library available")
+
+
+def is_pdf_file(filename: str, content: bytes) -> bool:
+    """Check if file is a PDF based on filename or magic bytes"""
+    # Check filename extension
+    if filename and filename.lower().endswith('.pdf'):
+        return True
+    
+    # Check PDF magic bytes (PDF files start with %PDF-)
+    if content and content[:5] == b'%PDF-':
+        return True
+    
+    return False
 
 
 @app.on_event("startup")
@@ -57,6 +163,9 @@ async def load_training_data():
     
     # Ensure static directory exists
     os.makedirs(STATIC_DIR, exist_ok=True)
+    
+    # Log PDF support status
+    print(f"PDF Support - PyPDF2: {PDF_SUPPORT}, pdfplumber: {PDFPLUMBER_SUPPORT}")
 
 
 @app.get("/", include_in_schema=False)
@@ -91,7 +200,12 @@ async def root_api():
         "fasttext_available": fasttext_available,
         "model_trained": model_exists,
         "keywords_count": len(training_data),
-        "total_examples": sum(len(sentences) for sentences in training_data.values())
+        "total_examples": sum(len(sentences) for sentences in training_data.values()),
+        "pdf_support": {
+            "available": PDF_SUPPORT or PDFPLUMBER_SUPPORT,
+            "pypdf2": PDF_SUPPORT,
+            "pdfplumber": PDFPLUMBER_SUPPORT
+        }
     }
 
 
@@ -135,31 +249,6 @@ def run_fasttext_command(args: List[str], input_text: str = None) -> subprocess.
             status_code=500,
             detail="FastText executable not found"
         )
-
-
-@app.get("/")
-async def root():
-    """API health check"""
-    model_exists = os.path.exists(MODEL_PATH)
-    
-    # Check FastText version
-    try:
-        result = subprocess.run(
-            [FASTTEXT_BIN, "--help"],
-            capture_output=True,
-            text=True
-        )
-        fasttext_available = result.returncode == 0
-    except:
-        fasttext_available = False
-    
-    return {
-        "status": "running",
-        "fasttext_available": fasttext_available,
-        "model_trained": model_exists,
-        "keywords_count": len(training_data),
-        "total_examples": sum(len(sentences) for sentences in training_data.values())
-    }
 
 
 @app.post("/train/add")
@@ -285,7 +374,7 @@ async def delete_keyword(keyword: str):
     return {"message": f"Deleted keyword '{keyword}'"}
 
 
-def predict_with_fasttext(text: str, k: int = 5) -> List[Dict[str, float]]:
+def predict_with_fasttext(text: str, k: int = 5) -> List[Dict[str, any]]:
     """Use FastText C++ executable to predict keywords"""
     if not os.path.exists(MODEL_PATH):
         raise HTTPException(
@@ -346,11 +435,50 @@ def predict_with_fasttext(text: str, k: int = 5) -> List[Dict[str, float]]:
 
 @app.post("/predict", response_model=PredictionResponse)
 async def predict_keywords(file: UploadFile = File(...)):
-    """Upload a document and get top 5 matching keywords"""
+    """
+    Upload a document (text or PDF) and get top 5 matching keywords.
+    
+    Supported formats:
+    - Text files (.txt, etc.) - UTF-8 encoded
+    - PDF files (.pdf)
+    """
     try:
         # Read the uploaded file
         content = await file.read()
-        text = content.decode('utf-8')
+        
+        if not content:
+            raise HTTPException(status_code=400, detail="Empty file")
+        
+        # Check if it's a PDF file
+        if is_pdf_file(file.filename, content):
+            # Extract text from PDF
+            text, page_count = extract_text_from_pdf(content)
+            source_type = "pdf"
+            
+            if not text.strip():
+                raise HTTPException(
+                    status_code=400, 
+                    detail="Could not extract text from PDF. The PDF might be image-based or encrypted."
+                )
+        else:
+            # Treat as text file
+            try:
+                text = content.decode('utf-8')
+            except UnicodeDecodeError:
+                # Try other encodings
+                for encoding in ['latin-1', 'cp1252', 'iso-8859-1']:
+                    try:
+                        text = content.decode(encoding)
+                        break
+                    except UnicodeDecodeError:
+                        continue
+                else:
+                    raise HTTPException(
+                        status_code=400, 
+                        detail="Could not decode file. Ensure it's UTF-8 encoded text or a valid PDF."
+                    )
+            source_type = "text"
+            page_count = None
         
         if not text.strip():
             raise HTTPException(status_code=400, detail="Empty document")
@@ -363,35 +491,72 @@ async def predict_keywords(file: UploadFile = File(...)):
         
         return PredictionResponse(
             top_keywords=top_keywords,
-            text_preview=preview
+            text_preview=preview,
+            source_type=source_type,
+            page_count=page_count
         )
     
-    except UnicodeDecodeError:
-        raise HTTPException(status_code=400, detail="File must be UTF-8 encoded text")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
 
 @app.post("/predict/text")
-async def predict_from_text(text: str):
+async def predict_from_text(data: TextInput):
     """Predict keywords from raw text instead of file upload"""
     try:
-        if not text.strip():
+        if not data.text.strip():
             raise HTTPException(status_code=400, detail="Empty text")
         
         # Get predictions
-        top_keywords = predict_with_fasttext(text, k=5)
+        top_keywords = predict_with_fasttext(data.text, k=5)
         
         # Create preview
-        preview = text[:200] + "..." if len(text) > 200 else text
+        preview = data.text[:200] + "..." if len(data.text) > 200 else data.text
         
         return {
             "top_keywords": top_keywords,
-            "text_preview": preview
+            "text_preview": preview,
+            "source_type": "text"
         }
     
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+
+
+@app.post("/pdf/extract")
+async def extract_pdf_text(file: UploadFile = File(...)):
+    """
+    Extract text from a PDF file without prediction.
+    Useful for previewing PDF content before classification.
+    """
+    try:
+        content = await file.read()
+        
+        if not content:
+            raise HTTPException(status_code=400, detail="Empty file")
+        
+        if not is_pdf_file(file.filename, content):
+            raise HTTPException(status_code=400, detail="File is not a valid PDF")
+        
+        text, page_count = extract_text_from_pdf(content)
+        
+        return {
+            "filename": file.filename,
+            "page_count": page_count,
+            "character_count": len(text),
+            "word_count": len(text.split()),
+            "text": text,
+            "preview": text[:500] + "..." if len(text) > 500 else text
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"PDF extraction failed: {str(e)}")
 
 
 @app.get("/model/info")
@@ -428,6 +593,25 @@ async def model_info():
             "model_size_mb": round(model_size / (1024 * 1024), 2),
             "error": str(e)
         }
+
+
+@app.get("/pdf/status")
+async def pdf_status():
+    """Check PDF processing capabilities"""
+    return {
+        "pdf_support_available": PDF_SUPPORT or PDFPLUMBER_SUPPORT,
+        "libraries": {
+            "pypdf2": {
+                "installed": PDF_SUPPORT,
+                "description": "Basic PDF text extraction"
+            },
+            "pdfplumber": {
+                "installed": PDFPLUMBER_SUPPORT,
+                "description": "Advanced PDF text extraction with better layout handling"
+            }
+        },
+        "recommendation": "pdfplumber" if PDFPLUMBER_SUPPORT else ("pypdf2" if PDF_SUPPORT else "Install PyPDF2 or pdfplumber")
+    }
 
 
 if __name__ == "__main__":
