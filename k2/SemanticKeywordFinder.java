@@ -29,6 +29,70 @@ public class SemanticKeywordFinder {
     }
 
     /**
+     * Process a string content and return a CompletableFuture with the top matching keywords
+     * 
+     * @param content The complete file content as a string
+     * @param numResults Number of top keywords to return (default: 3)
+     * @param numTopSentences Number of top sentences per keyword (default: 1)
+     * @return CompletableFuture containing a list of matching keyword strings
+     */
+    public CompletableFuture<List<String>> processContentAsync(String content, int numResults, int numTopSentences) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                SearchResults results = processContent(content, numResults, numTopSentences);
+                return results.topKeywords.stream()
+                        .map(match -> match.keyword)
+                        .collect(Collectors.toList());
+            } catch (Exception e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    /**
+     * Convenience method with default parameters
+     * 
+     * @param content The complete file content as a string
+     * @return CompletableFuture containing a list of the top 3 matching keyword strings
+     */
+    public CompletableFuture<List<String>> processContentAsync(String content) {
+        return processContentAsync(content, 3, 1);
+    }
+
+    /**
+     * Process content string and find semantic keyword matches
+     */
+    private SearchResults processContent(String content, int numResults, int numTopSentences) {
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("Content is empty or null.");
+        }
+
+        // Process document
+        List<String> sentences = splitIntoSentences(content);
+
+        if (sentences.isEmpty()) {
+            throw new IllegalArgumentException("Could not split the content into sentences.");
+        }
+
+        // Build vocabulary and compute embeddings
+        embeddingEngine.buildVocabulary(sentences, VERIFICATION_KEYWORDS);
+
+        List<double[]> sentenceEmbeddings = sentences.stream()
+                .map(embeddingEngine::embed)
+                .collect(Collectors.toList());
+
+        List<double[]> keywordEmbeddings = VERIFICATION_KEYWORDS.stream()
+                .map(embeddingEngine::embed)
+                .collect(Collectors.toList());
+
+        // Find semantic matches
+        return findSemanticMatches(
+                sentences, sentenceEmbeddings,
+                VERIFICATION_KEYWORDS, keywordEmbeddings,
+                numResults, numTopSentences);
+    }
+
+    /**
      * Main entry point
      */
     public static void main(String[] args) {
@@ -145,35 +209,7 @@ public class SemanticKeywordFinder {
         try {
             // Read file content
             String documentText = Files.readString(Path.of(filePath));
-
-            if (documentText.isBlank()) {
-                throw new RuntimeException("Document content is empty.");
-            }
-
-            // Process document
-            List<String> sentences = splitIntoSentences(documentText);
-
-            if (sentences.isEmpty()) {
-                throw new RuntimeException("Could not split the document into sentences.");
-            }
-
-            // Build vocabulary and compute embeddings
-            embeddingEngine.buildVocabulary(sentences, VERIFICATION_KEYWORDS);
-
-            List<double[]> sentenceEmbeddings = sentences.stream()
-                    .map(embeddingEngine::embed)
-                    .collect(Collectors.toList());
-
-            List<double[]> keywordEmbeddings = VERIFICATION_KEYWORDS.stream()
-                    .map(embeddingEngine::embed)
-                    .collect(Collectors.toList());
-
-            // Find semantic matches
-            return findSemanticMatches(
-                    sentences, sentenceEmbeddings,
-                    VERIFICATION_KEYWORDS, keywordEmbeddings,
-                    numResults, numTopSentences);
-
+            return processContent(documentText, numResults, numTopSentences);
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
