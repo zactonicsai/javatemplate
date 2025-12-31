@@ -152,3 +152,4 @@ fasttext/models/keyword_model.bin
 fasttext/models/keyword_model.vec
 fasttext/data/training_data.json
 k2/*.class
+futureapp/gradle

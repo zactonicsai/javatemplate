@@ -1,0 +1,45 @@
+package com.example.demo.dto;
+
+import java.time.LocalDateTime;
+
+public class TaskDTO {
+    
+    private Long id;
+    private String task;
+    private LocalDateTime dateModified;
+    
+    // Constructors
+    public TaskDTO() {
+    }
+    
+    public TaskDTO(Long id, String task, LocalDateTime dateModified) {
+        this.id = id;
+        this.task = task;
+        this.dateModified = dateModified;
+    }
+    
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+    
+    public void setId(Long id) {
+        this.id = id;
+    }
+    
+    public String getTask() {
+        return task;
+    }
+    
+    public void setTask(String task) {
+        this.task = task;
+    }
+    
+    public LocalDateTime getDateModified() {
+        return dateModified;
+    }
+    
+    public void setDateModified(LocalDateTime dateModified) {
+        this.dateModified = dateModified;
+    }
+}

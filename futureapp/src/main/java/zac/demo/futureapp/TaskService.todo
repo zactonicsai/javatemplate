@@ -1,0 +1,81 @@
+package com.example.demo.service;
+
+import com.example.demo.dto.TaskDTO;
+import com.example.demo.entity.Task;
+import com.example.demo.repository.TaskRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+@Transactional
+public class TaskService {
+    
+    private final TaskRepository taskRepository;
+    
+    @Autowired
+    public TaskService(TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
+    }
+    
+    // Create
+    public TaskDTO createTask(TaskDTO taskDTO) {
+        Task task = convertToEntity(taskDTO);
+        Task savedTask = taskRepository.save(task);
+        return convertToDTO(savedTask);
+    }
+    
+    // Read - Get all tasks
+    public List<TaskDTO> getAllTasks() {
+        return taskRepository.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+    
+    // Read - Get task by ID
+    public Optional<TaskDTO> getTaskById(Long id) {
+        return taskRepository.findById(id)
+                .map(this::convertToDTO);
+    }
+    
+    // Update
+    public Optional<TaskDTO> updateTask(Long id, TaskDTO taskDTO) {
+        return taskRepository.findById(id)
+                .map(existingTask -> {
+                    existingTask.setTask(taskDTO.getTask());
+                    // dateModified will be automatically updated by @PreUpdate
+                    Task updatedTask = taskRepository.save(existingTask);
+                    return convertToDTO(updatedTask);
+                });
+    }
+    
+    // Delete
+    public boolean deleteTask(Long id) {
+        if (taskRepository.existsById(id)) {
+            taskRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+    
+    // Helper method to convert Entity to DTO
+    private TaskDTO convertToDTO(Task task) {
+        return new TaskDTO(
+            task.getId(),
+            task.getTask(),
+            task.getDateModified()
+        );
+    }
+    
+    // Helper method to convert DTO to Entity
+    private Task convertToEntity(TaskDTO taskDTO) {
+        Task task = new Task();
+        task.setTask(taskDTO.getTask());
+        return task;
+    }
+}
