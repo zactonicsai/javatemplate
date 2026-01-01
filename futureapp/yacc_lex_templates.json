@@ -1,0 +1,154 @@
+{
+  "metadata": {
+    "name": "YACC/LEX Templates",
+    "version": "1.0",
+    "description": "Lexer and parser templates using Lex (Flex) and YACC (Bison)",
+    "total_snippets": 12
+  },
+  "snippets": [
+    {
+      "id": "lex_basic_structure",
+      "category": "lex",
+      "subcategory": "fundamentals",
+      "keywords": ["lexer", "lex", "flex", "scanner", "tokenizer", "structure", "template"],
+      "description": "Basic Lex/Flex file structure with definitions, rules, and user code sections",
+      "search_text": "lexer lex flex scanner tokenizer basic structure template skeleton definitions rules sections",
+      "language": "lex",
+      "dependencies": ["flex"],
+      "difficulty": "beginner",
+      "code": "%{\n/* C declarations - included in output */\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint line_num = 1;\n%}\n\n/* Definitions section - named patterns */\nDIGIT       [0-9]\nLETTER      [a-zA-Z]\nWHITESPACE  [ \\t]+\n\n/* Options */\n%option noyywrap\n\n%%\n    /* Rules section - pattern { action } */\n\n{WHITESPACE}    { /* ignore whitespace */ }\n\\n              { line_num++; }\n\n{DIGIT}+        { printf(\"INTEGER: %s\\n\", yytext); }\n{LETTER}+       { printf(\"WORD: %s\\n\", yytext); }\n\n.               { printf(\"UNKNOWN: %s\\n\", yytext); }\n\n%%\n\n/* User code section */\nint main(int argc, char *argv[]) {\n    if (argc > 1) {\n        yyin = fopen(argv[1], \"r\");\n        if (!yyin) {\n            perror(\"Error opening file\");\n            return 1;\n        }\n    }\n    \n    yylex();\n    \n    printf(\"Total lines: %d\\n\", line_num);\n    return 0;\n}"
+    },
+    {
+      "id": "lex_arithmetic_tokens",
+      "category": "lex",
+      "subcategory": "expressions",
+      "keywords": ["lexer", "arithmetic", "calculator", "numbers", "operators", "math", "expression"],
+      "description": "Lexer for arithmetic expressions with numbers and operators",
+      "search_text": "lexer arithmetic calculator numbers operators math expression plus minus multiply divide tokens",
+      "language": "lex",
+      "dependencies": ["flex"],
+      "difficulty": "beginner",
+      "code": "%{\n#include <stdio.h>\n#include <stdlib.h>\n\n/* Token types */\ntypedef enum {\n    TOK_NUMBER,\n    TOK_PLUS,\n    TOK_MINUS,\n    TOK_MULTIPLY,\n    TOK_DIVIDE,\n    TOK_LPAREN,\n    TOK_RPAREN,\n    TOK_NEWLINE,\n    TOK_EOF\n} TokenType;\n\ndouble yylval;\n%}\n\nDIGIT   [0-9]\nNUMBER  {DIGIT}+(\\.{DIGIT}+)?\n\n%option noyywrap\n\n%%\n\n{NUMBER}    { yylval = atof(yytext); return TOK_NUMBER; }\n\"+\"         { return TOK_PLUS; }\n\"-\"         { return TOK_MINUS; }\n\"*\"         { return TOK_MULTIPLY; }\n\"/\"         { return TOK_DIVIDE; }\n\"(\"         { return TOK_LPAREN; }\n\")\"         { return TOK_RPAREN; }\n\n\\n          { return TOK_NEWLINE; }\n[ \\t]+      { /* skip whitespace */ }\n\n.           { fprintf(stderr, \"Unknown char: %s\\n\", yytext); }\n\n%%\n\nconst char* token_name(TokenType t) {\n    switch(t) {\n        case TOK_NUMBER: return \"NUMBER\";\n        case TOK_PLUS: return \"PLUS\";\n        case TOK_MINUS: return \"MINUS\";\n        case TOK_MULTIPLY: return \"MULTIPLY\";\n        case TOK_DIVIDE: return \"DIVIDE\";\n        case TOK_LPAREN: return \"LPAREN\";\n        case TOK_RPAREN: return \"RPAREN\";\n        case TOK_NEWLINE: return \"NEWLINE\";\n        default: return \"UNKNOWN\";\n    }\n}\n\nint main() {\n    TokenType tok;\n    while ((tok = yylex()) != 0) {\n        if (tok == TOK_NUMBER)\n            printf(\"%s: %f\\n\", token_name(tok), yylval);\n        else\n            printf(\"%s\\n\", token_name(tok));\n    }\n    return 0;\n}"
+    },
+    {
+      "id": "lex_string_handling",
+      "category": "lex",
+      "subcategory": "strings",
+      "keywords": ["lexer", "string", "quoted", "escape", "literal", "text"],
+      "description": "Lexer handling quoted strings with escape sequences",
+      "search_text": "lexer string quoted escape sequences literal text double quotes backslash",
+      "language": "lex",
+      "dependencies": ["flex"],
+      "difficulty": "intermediate",
+      "code": "%{\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nchar string_buf[1024];\nchar *string_ptr;\n%}\n\n%x STRING\n\n%option noyywrap\n\n%%\n\n\\\"  {\n    /* Begin string */\n    string_ptr = string_buf;\n    BEGIN(STRING);\n}\n\n<STRING>\\\" {\n    /* End string */\n    *string_ptr = '\\0';\n    BEGIN(INITIAL);\n    printf(\"STRING: \\\"%s\\\"\\n\", string_buf);\n}\n\n<STRING>\\\\n  { *string_ptr++ = '\\n'; }  /* escaped newline */\n<STRING>\\\\t  { *string_ptr++ = '\\t'; }  /* escaped tab */\n<STRING>\\\\\\\" { *string_ptr++ = '\\\"'; }  /* escaped quote */\n<STRING>\\\\\\\\  { *string_ptr++ = '\\\\'; }  /* escaped backslash */\n\n<STRING>\\\\. {\n    /* Unknown escape - copy literally */\n    *string_ptr++ = yytext[1];\n}\n\n<STRING>\\n {\n    fprintf(stderr, \"Error: Unterminated string\\n\");\n    BEGIN(INITIAL);\n}\n\n<STRING>[^\\\\\"]+ {\n    /* Regular characters */\n    char *p = yytext;\n    while (*p) {\n        *string_ptr++ = *p++;\n    }\n}\n\n[a-zA-Z_][a-zA-Z0-9_]* {\n    printf(\"IDENTIFIER: %s\\n\", yytext);\n}\n\n[ \\t\\n]+    { /* ignore whitespace */ }\n\n.           { printf(\"CHAR: %s\\n\", yytext); }\n\n%%\n\nint main() {\n    yylex();\n    return 0;\n}"
+    },
+    {
+      "id": "lex_comments",
+      "category": "lex",
+      "subcategory": "comments",
+      "keywords": ["lexer", "comments", "multiline", "single", "block", "c-style"],
+      "description": "Lexer handling C-style single and multi-line comments",
+      "search_text": "lexer comments multiline single line block c-style slash star ignore skip",
+      "language": "lex",
+      "dependencies": ["flex"],
+      "difficulty": "intermediate",
+      "code": "%{\n#include <stdio.h>\n\nint comment_depth = 0;\nint line_num = 1;\n%}\n\n%x COMMENT\n%x LINE_COMMENT\n\n%option noyywrap\n\n%%\n\n\"/\\*\" {\n    /* Begin block comment */\n    comment_depth = 1;\n    BEGIN(COMMENT);\n}\n\n<COMMENT>\"/*\" {\n    /* Nested comment (optional support) */\n    comment_depth++;\n}\n\n<COMMENT>\"*/\" {\n    comment_depth--;\n    if (comment_depth == 0) {\n        BEGIN(INITIAL);\n    }\n}\n\n<COMMENT>\\n { line_num++; }  /* Track lines in comments */\n<COMMENT>.  { /* Ignore comment content */ }\n\n\"//\" {\n    /* Begin line comment */\n    BEGIN(LINE_COMMENT);\n}\n\n<LINE_COMMENT>\\n {\n    line_num++;\n    BEGIN(INITIAL);\n}\n\n<LINE_COMMENT>. { /* Ignore line comment content */ }\n\n[a-zA-Z_][a-zA-Z0-9_]* {\n    printf(\"IDENTIFIER: %s (line %d)\\n\", yytext, line_num);\n}\n\n[0-9]+  { printf(\"NUMBER: %s (line %d)\\n\", yytext, line_num); }\n\n\\n      { line_num++; }\n[ \\t]+  { /* ignore whitespace */ }\n\n.       { printf(\"CHAR: %s (line %d)\\n\", yytext, line_num); }\n\n%%\n\nint main() {\n    yylex();\n    return 0;\n}"
+    },
+    {
+      "id": "lex_json_tokens",
+      "category": "lex",
+      "subcategory": "data-formats",
+      "keywords": ["lexer", "json", "tokens", "parser", "data", "format"],
+      "description": "Lexer for JSON token recognition",
+      "search_text": "lexer json tokens parser data format object array string number boolean null",
+      "language": "lex",
+      "dependencies": ["flex"],
+      "difficulty": "intermediate",
+      "code": "%{\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef enum {\n    TOK_LBRACE,     /* { */\n    TOK_RBRACE,     /* } */\n    TOK_LBRACKET,   /* [ */\n    TOK_RBRACKET,   /* ] */\n    TOK_COLON,      /* : */\n    TOK_COMMA,      /* , */\n    TOK_STRING,\n    TOK_NUMBER,\n    TOK_TRUE,\n    TOK_FALSE,\n    TOK_NULL,\n    TOK_ERROR\n} JsonToken;\n\nchar string_value[4096];\ndouble num_value;\n\n%}\n\nDIGIT       [0-9]\nINT         -?{DIGIT}+\nFRAC        \\.{DIGIT}+\nEXP         [eE][+-]?{DIGIT}+\nNUMBER      {INT}{FRAC}?{EXP}?\n\n%option noyywrap\n\n%%\n\n\"{\"         { return TOK_LBRACE; }\n\"}\"         { return TOK_RBRACE; }\n\"[\"         { return TOK_LBRACKET; }\n\"]\"         { return TOK_RBRACKET; }\n\":\"         { return TOK_COLON; }\n\",\"         { return TOK_COMMA; }\n\n\"true\"      { return TOK_TRUE; }\n\"false\"     { return TOK_FALSE; }\n\"null\"      { return TOK_NULL; }\n\n{NUMBER}    {\n    num_value = atof(yytext);\n    return TOK_NUMBER;\n}\n\n\\\"([^\\\"\\\\]|\\\\.)*\\\" {\n    /* String with escape handling */\n    strncpy(string_value, yytext + 1, yyleng - 2);\n    string_value[yyleng - 2] = '\\0';\n    return TOK_STRING;\n}\n\n[ \\t\\n\\r]+  { /* ignore whitespace */ }\n\n.           {\n    fprintf(stderr, \"Unexpected character: %s\\n\", yytext);\n    return TOK_ERROR;\n}\n\n%%\n\nconst char* token_name(JsonToken t) {\n    switch(t) {\n        case TOK_LBRACE: return \"{\";\n        case TOK_RBRACE: return \"}\";\n        case TOK_LBRACKET: return \"[\";\n        case TOK_RBRACKET: return \"]\";\n        case TOK_COLON: return \":\";\n        case TOK_COMMA: return \",\";\n        case TOK_STRING: return \"STRING\";\n        case TOK_NUMBER: return \"NUMBER\";\n        case TOK_TRUE: return \"TRUE\";\n        case TOK_FALSE: return \"FALSE\";\n        case TOK_NULL: return \"NULL\";\n        default: return \"ERROR\";\n    }\n}\n\nint main() {\n    JsonToken tok;\n    printf(\"JSON Lexer - Enter JSON:\\n\");\n    while ((tok = yylex()) != 0) {\n        if (tok == TOK_STRING)\n            printf(\"%-10s: %s\\n\", token_name(tok), string_value);\n        else if (tok == TOK_NUMBER)\n            printf(\"%-10s: %g\\n\", token_name(tok), num_value);\n        else\n            printf(\"%-10s\\n\", token_name(tok));\n    }\n    return 0;\n}"
+    },
+    {
+      "id": "lex_keywords_identifiers",
+      "category": "lex",
+      "subcategory": "languages",
+      "keywords": ["lexer", "keywords", "identifiers", "reserved", "words", "programming"],
+      "description": "Lexer distinguishing keywords from identifiers",
+      "search_text": "lexer keywords identifiers reserved words programming language if else while for",
+      "language": "lex",
+      "dependencies": ["flex"],
+      "difficulty": "beginner",
+      "code": "%{\n#include <stdio.h>\n\ntypedef enum {\n    TOK_IF,\n    TOK_ELSE,\n    TOK_WHILE,\n    TOK_FOR,\n    TOK_RETURN,\n    TOK_INT,\n    TOK_FLOAT,\n    TOK_VOID,\n    TOK_IDENTIFIER,\n    TOK_NUMBER\n} TokenType;\n\n%}\n\nLETTER      [a-zA-Z_]\nDIGIT       [0-9]\nID          {LETTER}({LETTER}|{DIGIT})*\nNUM         {DIGIT}+(\\.{DIGIT}+)?\n\n%option noyywrap\n\n%%\n\n\"if\"        { printf(\"KEYWORD_IF\\n\"); }\n\"else\"      { printf(\"KEYWORD_ELSE\\n\"); }\n\"while\"     { printf(\"KEYWORD_WHILE\\n\"); }\n\"for\"       { printf(\"KEYWORD_FOR\\n\"); }\n\"return\"    { printf(\"KEYWORD_RETURN\\n\"); }\n\"int\"       { printf(\"KEYWORD_INT\\n\"); }\n\"float\"     { printf(\"KEYWORD_FLOAT\\n\"); }\n\"void\"      { printf(\"KEYWORD_VOID\\n\"); }\n\n{ID}        { printf(\"IDENTIFIER: %s\\n\", yytext); }\n{NUM}       { printf(\"NUMBER: %s\\n\", yytext); }\n\n\"==\"        { printf(\"OP_EQ\\n\"); }\n\"!=\"        { printf(\"OP_NE\\n\"); }\n\"<=\"        { printf(\"OP_LE\\n\"); }\n\">=\"        { printf(\"OP_GE\\n\"); }\n\"&&\"        { printf(\"OP_AND\\n\"); }\n\"||\"        { printf(\"OP_OR\\n\"); }\n\n[+\\-*/<>=!] { printf(\"OPERATOR: %s\\n\", yytext); }\n[();{}\\[\\],] { printf(\"PUNCT: %s\\n\", yytext); }\n\n[ \\t\\n]+    { /* ignore whitespace */ }\n\n.           { printf(\"UNKNOWN: %s\\n\", yytext); }\n\n%%\n\nint main() {\n    printf(\"Enter code (Ctrl+D to end):\\n\");\n    yylex();\n    return 0;\n}"
+    },
+    {
+      "id": "yacc_basic_structure",
+      "category": "yacc",
+      "subcategory": "fundamentals",
+      "keywords": ["yacc", "bison", "parser", "grammar", "structure", "template"],
+      "description": "Basic YACC/Bison file structure with grammar rules",
+      "search_text": "yacc bison parser grammar structure template skeleton rules productions tokens",
+      "language": "yacc",
+      "dependencies": ["bison", "flex"],
+      "difficulty": "beginner",
+      "code": "%{\n/* C declarations */\n#include <stdio.h>\n#include <stdlib.h>\n\nvoid yyerror(const char *s);\nint yylex(void);\n%}\n\n/* Token declarations */\n%token NUMBER\n%token IDENTIFIER\n%token PLUS MINUS MULTIPLY DIVIDE\n%token LPAREN RPAREN\n%token SEMICOLON\n%token ASSIGN\n\n/* Operator precedence (lowest to highest) */\n%left PLUS MINUS\n%left MULTIPLY DIVIDE\n\n/* Start symbol */\n%start program\n\n%%\n/* Grammar rules */\n\nprogram\n    : statements\n    ;\n\nstatements\n    : statement\n    | statements statement\n    ;\n\nstatement\n    : expression SEMICOLON  { printf(\"Statement parsed\\n\"); }\n    | IDENTIFIER ASSIGN expression SEMICOLON\n                            { printf(\"Assignment parsed\\n\"); }\n    ;\n\nexpression\n    : expression PLUS expression    { printf(\"Addition\\n\"); }\n    | expression MINUS expression   { printf(\"Subtraction\\n\"); }\n    | expression MULTIPLY expression { printf(\"Multiplication\\n\"); }\n    | expression DIVIDE expression  { printf(\"Division\\n\"); }\n    | LPAREN expression RPAREN      { printf(\"Parenthesized\\n\"); }\n    | NUMBER                        { printf(\"Number\\n\"); }\n    | IDENTIFIER                    { printf(\"Identifier\\n\"); }\n    ;\n\n%%\n/* User code */\n\nvoid yyerror(const char *s) {\n    fprintf(stderr, \"Parse error: %s\\n\", s);\n}\n\nint main() {\n    printf(\"Enter expressions (end with Ctrl+D):\\n\");\n    if (yyparse() == 0) {\n        printf(\"Parsing successful!\\n\");\n    }\n    return 0;\n}"
+    },
+    {
+      "id": "yacc_calculator",
+      "category": "yacc",
+      "subcategory": "expressions",
+      "keywords": ["yacc", "calculator", "arithmetic", "expression", "eval", "compute"],
+      "description": "YACC calculator that evaluates arithmetic expressions",
+      "search_text": "yacc calculator arithmetic expression evaluate compute math result value semantic",
+      "language": "yacc",
+      "dependencies": ["bison", "flex"],
+      "difficulty": "intermediate",
+      "code": "%{\n#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n\nvoid yyerror(const char *s);\nint yylex(void);\n%}\n\n/* Semantic value type */\n%union {\n    double num;\n}\n\n/* Token types with values */\n%token <num> NUMBER\n%type <num> expression term factor\n\n/* Tokens without values */\n%token PLUS MINUS MULTIPLY DIVIDE POWER\n%token LPAREN RPAREN\n%token NEWLINE\n%token QUIT\n\n/* Precedence */\n%left PLUS MINUS\n%left MULTIPLY DIVIDE\n%right POWER\n%right UMINUS\n\n%%\n\ninput\n    : /* empty */\n    | input line\n    ;\n\nline\n    : NEWLINE\n    | expression NEWLINE  { printf(\"= %.6g\\n\", $1); }\n    | QUIT NEWLINE        { printf(\"Goodbye!\\n\"); exit(0); }\n    | error NEWLINE       { yyerrok; printf(\"Try again: \"); }\n    ;\n\nexpression\n    : expression PLUS term      { $$ = $1 + $3; }\n    | expression MINUS term     { $$ = $1 - $3; }\n    | term                      { $$ = $1; }\n    ;\n\nterm\n    : term MULTIPLY factor      { $$ = $1 * $3; }\n    | term DIVIDE factor        {\n        if ($3 == 0) {\n            yyerror(\"Division by zero\");\n            $$ = 0;\n        } else {\n            $$ = $1 / $3;\n        }\n    }\n    | factor                    { $$ = $1; }\n    ;\n\nfactor\n    : factor POWER factor       { $$ = pow($1, $3); }\n    | LPAREN expression RPAREN  { $$ = $2; }\n    | MINUS factor %prec UMINUS { $$ = -$2; }\n    | NUMBER                    { $$ = $1; }\n    ;\n\n%%\n\nvoid yyerror(const char *s) {\n    fprintf(stderr, \"Error: %s\\n\", s);\n}\n\nint main() {\n    printf(\"Calculator - Enter expressions (type 'quit' to exit):\\n\");\n    return yyparse();\n}"
+    },
+    {
+      "id": "yacc_ast_builder",
+      "category": "yacc",
+      "subcategory": "ast",
+      "keywords": ["yacc", "ast", "syntax", "tree", "nodes", "build", "parse"],
+      "description": "YACC grammar that builds an Abstract Syntax Tree",
+      "search_text": "yacc ast abstract syntax tree nodes build parse structure traverse",
+      "language": "yacc",
+      "dependencies": ["bison", "flex"],
+      "difficulty": "advanced",
+      "code": "%{\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* AST Node Types */\ntypedef enum {\n    NODE_NUMBER,\n    NODE_BINOP,\n    NODE_UNARYOP,\n    NODE_IDENTIFIER\n} NodeType;\n\n/* AST Node Structure */\ntypedef struct ASTNode {\n    NodeType type;\n    union {\n        double number;\n        char *identifier;\n        struct {\n            char op;\n            struct ASTNode *left;\n            struct ASTNode *right;\n        } binop;\n        struct {\n            char op;\n            struct ASTNode *operand;\n        } unaryop;\n    } data;\n} ASTNode;\n\n/* Node constructors */\nASTNode* make_number(double val) {\n    ASTNode *node = malloc(sizeof(ASTNode));\n    node->type = NODE_NUMBER;\n    node->data.number = val;\n    return node;\n}\n\nASTNode* make_binop(char op, ASTNode *left, ASTNode *right) {\n    ASTNode *node = malloc(sizeof(ASTNode));\n    node->type = NODE_BINOP;\n    node->data.binop.op = op;\n    node->data.binop.left = left;\n    node->data.binop.right = right;\n    return node;\n}\n\nASTNode* make_unaryop(char op, ASTNode *operand) {\n    ASTNode *node = malloc(sizeof(ASTNode));\n    node->type = NODE_UNARYOP;\n    node->data.unaryop.op = op;\n    node->data.unaryop.operand = operand;\n    return node;\n}\n\n/* Print AST */\nvoid print_ast(ASTNode *node, int indent) {\n    for (int i = 0; i < indent; i++) printf(\"  \");\n    \n    switch (node->type) {\n        case NODE_NUMBER:\n            printf(\"NUMBER: %g\\n\", node->data.number);\n            break;\n        case NODE_BINOP:\n            printf(\"BINOP: %c\\n\", node->data.binop.op);\n            print_ast(node->data.binop.left, indent + 1);\n            print_ast(node->data.binop.right, indent + 1);\n            break;\n        case NODE_UNARYOP:\n            printf(\"UNARYOP: %c\\n\", node->data.unaryop.op);\n            print_ast(node->data.unaryop.operand, indent + 1);\n            break;\n        default:\n            printf(\"UNKNOWN\\n\");\n    }\n}\n\nvoid yyerror(const char *s);\nint yylex(void);\n%}\n\n%union {\n    double num;\n    struct ASTNode *node;\n}\n\n%token <num> NUMBER\n%type <node> expr term factor\n\n%left '+' '-'\n%left '*' '/'\n%right UMINUS\n\n%%\n\nprogram\n    : expr '\\n'  { \n        printf(\"\\nAST:\\n\");\n        print_ast($1, 0);\n      }\n    ;\n\nexpr\n    : expr '+' term  { $$ = make_binop('+', $1, $3); }\n    | expr '-' term  { $$ = make_binop('-', $1, $3); }\n    | term           { $$ = $1; }\n    ;\n\nterm\n    : term '*' factor  { $$ = make_binop('*', $1, $3); }\n    | term '/' factor  { $$ = make_binop('/', $1, $3); }\n    | factor           { $$ = $1; }\n    ;\n\nfactor\n    : '(' expr ')'        { $$ = $2; }\n    | '-' factor %prec UMINUS  { $$ = make_unaryop('-', $2); }\n    | NUMBER              { $$ = make_number($1); }\n    ;\n\n%%\n\nvoid yyerror(const char *s) {\n    fprintf(stderr, \"Error: %s\\n\", s);\n}\n\nint main() {\n    printf(\"Enter expression: \");\n    return yyparse();\n}"
+    },
+    {
+      "id": "lex_yacc_combined",
+      "category": "combined",
+      "subcategory": "integration",
+      "keywords": ["lex", "yacc", "combined", "integration", "lexer", "parser", "makefile"],
+      "description": "Complete Lex+YACC integration with Makefile",
+      "search_text": "lex yacc combined integration lexer parser makefile build compile link tokens",
+      "language": "makefile",
+      "dependencies": ["bison", "flex", "make"],
+      "difficulty": "intermediate",
+      "code": "# Makefile for Lex/YACC project\n\nCC = gcc\nCFLAGS = -Wall -g\nLFLAGS = -lfl -lm\n\n# Target executable\nTARGET = parser\n\n# Source files\nLEX_SRC = scanner.l\nYACC_SRC = parser.y\n\n# Generated files\nLEX_C = lex.yy.c\nYACC_C = y.tab.c\nYACC_H = y.tab.h\n\n# Default target\nall: $(TARGET)\n\n# Link everything\n$(TARGET): $(LEX_C) $(YACC_C)\n\t$(CC) $(CFLAGS) -o $@ $(LEX_C) $(YACC_C) $(LFLAGS)\n\n# Generate parser (creates .c and .h)\n$(YACC_C) $(YACC_H): $(YACC_SRC)\n\tbison -d -o $(YACC_C) $(YACC_SRC)\n\n# Generate lexer (depends on parser header for tokens)\n$(LEX_C): $(LEX_SRC) $(YACC_H)\n\tflex -o $(LEX_C) $(LEX_SRC)\n\n# Clean generated files\nclean:\n\trm -f $(TARGET) $(LEX_C) $(YACC_C) $(YACC_H)\n\n# Test the parser\ntest: $(TARGET)\n\techo \"3 + 4 * 2\" | ./$(TARGET)\n\n.PHONY: all clean test\n\n# === scanner.l (save as separate file) ===\n# %{\n# #include \"y.tab.h\"\n# %}\n# %%\n# [0-9]+    { yylval = atoi(yytext); return NUMBER; }\n# \"+\"       { return PLUS; }\n# \"-\"       { return MINUS; }\n# \"*\"       { return MULTIPLY; }\n# \"/\"       { return DIVIDE; }\n# \"(\"       { return LPAREN; }\n# \")\"       { return RPAREN; }\n# \"\\n\"      { return NEWLINE; }\n# [ \\t]     { /* skip whitespace */ }\n# .         { printf(\"Unknown: %s\\n\", yytext); }\n# %%\n\n# === parser.y (save as separate file) ===\n# %{\n# #include <stdio.h>\n# void yyerror(const char *s);\n# int yylex(void);\n# %}\n# %token NUMBER PLUS MINUS MULTIPLY DIVIDE LPAREN RPAREN NEWLINE\n# %left PLUS MINUS\n# %left MULTIPLY DIVIDE\n# %%\n# input: expr NEWLINE { printf(\"Result: %d\\n\", $1); }\n#      ;\n# expr: expr PLUS expr    { $$ = $1 + $3; }\n#     | expr MINUS expr   { $$ = $1 - $3; }\n#     | expr MULTIPLY expr { $$ = $1 * $3; }\n#     | expr DIVIDE expr  { $$ = $1 / $3; }\n#     | LPAREN expr RPAREN { $$ = $2; }\n#     | NUMBER            { $$ = $1; }\n#     ;\n# %%\n# void yyerror(const char *s) { fprintf(stderr, \"%s\\n\", s); }\n# int main() { return yyparse(); }"
+    },
+    {
+      "id": "lex_html_tags",
+      "category": "lex",
+      "subcategory": "markup",
+      "keywords": ["lexer", "html", "tags", "markup", "elements", "attributes"],
+      "description": "Lexer for parsing HTML tags and attributes",
+      "search_text": "lexer html tags markup elements attributes parsing web document angle brackets",
+      "language": "lex",
+      "dependencies": ["flex"],
+      "difficulty": "intermediate",
+      "code": "%{\n#include <stdio.h>\n#include <string.h>\n\nchar tag_name[256];\nchar attr_name[256];\nchar attr_value[1024];\n%}\n\n%x TAG\n%x ATTR\n%x ATTRVAL\n\n%option noyywrap\n\n%%\n\n\"<\" {\n    BEGIN(TAG);\n}\n\n\"</\" {\n    printf(\"CLOSE_TAG_START\\n\");\n    BEGIN(TAG);\n}\n\n<TAG>\"/\" {\n    printf(\"SELF_CLOSE\\n\");\n}\n\n<TAG>[a-zA-Z][a-zA-Z0-9]* {\n    strcpy(tag_name, yytext);\n    printf(\"TAG_NAME: %s\\n\", tag_name);\n    BEGIN(ATTR);\n}\n\n<TAG>\">\" {\n    printf(\"TAG_END\\n\");\n    BEGIN(INITIAL);\n}\n\n<ATTR>[ \\t\\n]+  { /* skip whitespace */ }\n\n<ATTR>[a-zA-Z][a-zA-Z0-9\\-]* {\n    strcpy(attr_name, yytext);\n    printf(\"  ATTR_NAME: %s\\n\", attr_name);\n}\n\n<ATTR>\"=\" {\n    BEGIN(ATTRVAL);\n}\n\n<ATTR>\"/\" {\n    printf(\"SELF_CLOSE\\n\");\n}\n\n<ATTR>\">\" {\n    printf(\"TAG_END\\n\");\n    BEGIN(INITIAL);\n}\n\n<ATTRVAL>\\\"[^\\\"]*\\\" {\n    /* Quoted attribute value */\n    strncpy(attr_value, yytext + 1, yyleng - 2);\n    attr_value[yyleng - 2] = '\\0';\n    printf(\"  ATTR_VALUE: %s\\n\", attr_value);\n    BEGIN(ATTR);\n}\n\n<ATTRVAL>[^ \\t\\n/>]+ {\n    /* Unquoted attribute value */\n    printf(\"  ATTR_VALUE: %s\\n\", yytext);\n    BEGIN(ATTR);\n}\n\n[^<]+  {\n    /* Text content */\n    char *text = yytext;\n    /* Trim leading/trailing whitespace for display */\n    while (*text == ' ' || *text == '\\t' || *text == '\\n') text++;\n    if (strlen(text) > 0) {\n        printf(\"TEXT: %.40s%s\\n\", text, strlen(text) > 40 ? \"...\" : \"\");\n    }\n}\n\n%%\n\nint main() {\n    printf(\"HTML Lexer - Enter HTML:\\n\");\n    yylex();\n    return 0;\n}"
+    },
+    {
+      "id": "lex_css_selectors",
+      "category": "lex",
+      "subcategory": "styles",
+      "keywords": ["lexer", "css", "selectors", "styles", "classes", "ids"],
+      "description": "Lexer for parsing CSS selectors and properties",
+      "search_text": "lexer css selectors styles classes ids properties values stylesheet",
+      "language": "lex",
+      "dependencies": ["flex"],
+      "difficulty": "intermediate",
+      "code": "%{\n#include <stdio.h>\n\ntypedef enum {\n    TOK_ELEMENT,\n    TOK_CLASS,\n    TOK_ID,\n    TOK_PSEUDO,\n    TOK_PROPERTY,\n    TOK_VALUE,\n    TOK_LBRACE,\n    TOK_RBRACE,\n    TOK_COLON,\n    TOK_SEMICOLON,\n    TOK_COMMA\n} CssToken;\n\nint in_block = 0;\nint after_colon = 0;\n%}\n\n%x BLOCK\n%x VALUE\n\nIDENT       [a-zA-Z_][a-zA-Z0-9_-]*\nNUM         -?[0-9]+(\\.[0-9]+)?\n\n%option noyywrap\n\n%%\n\n\"{\"         { in_block = 1; printf(\"BLOCK_START\\n\"); BEGIN(BLOCK); }\n\n\\.{IDENT}   { printf(\"CLASS_SELECTOR: %s\\n\", yytext + 1); }\n\"#\"{IDENT}  { printf(\"ID_SELECTOR: %s\\n\", yytext + 1); }\n\":\"{IDENT}  { printf(\"PSEUDO: %s\\n\", yytext + 1); }\n\"::\"IDENT   { printf(\"PSEUDO_ELEMENT: %s\\n\", yytext + 2); }\n{IDENT}     { printf(\"ELEMENT_SELECTOR: %s\\n\", yytext); }\n\n\",\"         { printf(\"SELECTOR_SEPARATOR\\n\"); }\n\">\"         { printf(\"CHILD_COMBINATOR\\n\"); }\n\"+\"         { printf(\"ADJACENT_COMBINATOR\\n\"); }\n\"~\"         { printf(\"SIBLING_COMBINATOR\\n\"); }\n\n<BLOCK>\"}\"  {\n    in_block = 0;\n    printf(\"BLOCK_END\\n\");\n    BEGIN(INITIAL);\n}\n\n<BLOCK>{IDENT} {\n    printf(\"  PROPERTY: %s\\n\", yytext);\n}\n\n<BLOCK>\":\"  {\n    after_colon = 1;\n    BEGIN(VALUE);\n}\n\n<VALUE>[^;{}]+ {\n    /* Trim whitespace */\n    char *val = yytext;\n    while (*val == ' ') val++;\n    char *end = val + strlen(val) - 1;\n    while (end > val && *end == ' ') end--;\n    *(end + 1) = '\\0';\n    printf(\"  VALUE: %s\\n\", val);\n}\n\n<VALUE>\";\"  {\n    after_colon = 0;\n    BEGIN(BLOCK);\n}\n\n<VALUE>\"}\"  {\n    in_block = 0;\n    after_colon = 0;\n    printf(\"BLOCK_END\\n\");\n    BEGIN(INITIAL);\n}\n\n\"/\\*\"([^*]|\\*+[^/])*\\*+\"/\" {\n    /* Skip CSS comments */\n}\n\n[ \\t\\n]+    { /* skip whitespace */ }\n\n.           { /* ignore other chars */ }\n\n%%\n\nint main() {\n    printf(\"CSS Lexer - Enter CSS:\\n\");\n    yylex();\n    return 0;\n}"
+    }
+  ]
+}

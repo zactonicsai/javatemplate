@@ -1,0 +1,8 @@
+# Code Q&A System Dependencies
+# Install with: pip install -r requirements.txt
+
+# ChromaDB - Vector database for embeddings
+chromadb>=0.4.0
+
+# Ollama Python client - Interface to local Ollama server
+ollama>=0.1.0

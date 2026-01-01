@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brand Builder - Complete Tutorial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen py-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-bold text-white mb-4 flex items-center justify-center gap-4">
+                <i class="fas fa-crown text-yellow-400"></i>
+                Brand Builder Masterclass
+            </h1>
+            <p class="text-xl text-purple-200">Complete guide to building your dream brand</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="glass rounded-2xl p-4 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-white font-semibold">Progress</span>
+                <span id="progress" class="text-white font-bold">Step 1 of 22</span>
+            </div>
+            <div class="w-full bg-white bg-opacity-20 rounded-full h-3">
+                <div id="progress-bar" class="bg-gradient-to-r from-yellow-400 to-pink-500 h-3 rounded-full transition-all duration-500" style="width: 4.5%"></div>
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Steps Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="glass rounded-2xl p-6 sticky top-8">
+                    <h3 class="text-white font-bold mb-6 text-lg">📋 Tutorial Steps</h3>
+                    <div id="steps-list" class="space-y-2 max-h-96 overflow-y-auto">
+                        <!-- Steps will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="lg:col-span-2">
+                <div class="glass rounded-2xl p-8">
+                    <div id="steps-container" class="space-y-6">
+                        <!-- Steps content will be here -->
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="flex justify-between items-center mt-12 pt-8 border-t border-white border-opacity-20">
+                        <button id="prev" class="flex items-center gap-2 bg-white bg-opacity-10 hover:bg-opacity-20 text-white px-6 py-3 rounded-xl transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Previous</span>
+                        </button>
+                        <button id="next" class="flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-pink-500 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+                            <span>Next Step</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="mt-12 glass rounded-2xl p-6">
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <button id="save" class="flex items-center gap-2 bg-gradient-to-r from-green-500 to-teal-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300">
+                    <i class="fas fa-save"></i>
+                    <span>Save Progress</span>
+                </button>
+                <button id="export" class="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300">
+                    <i class="fas fa-download"></i>
+                    <span>Export JSON</span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <input type="file" id="import-file" accept=".json" class="hidden">
+                    <button id="import" class="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300">
+                        <i class="fas fa-upload"></i>
+                        <span>Import</span>
+                    </button>
+                </div>
+                <button id="reset" class="flex items-center gap-2 bg-red-500 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300">
+                    <i class="fas fa-trash"></i>
+                    <span>Reset</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const stepsConfig = [
+            {
+                title: "Choose Your Niche",
+                icon: "fas fa-target",
+                content: `
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-yellow-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-target text-2xl text-yellow-400"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Step 1: Choose Your Niche</h2>
+                            <p class="text-purple-200 text-lg">Select a passionate target market for your brand</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-xl p-6">
+                            <label class="block text-white mb-2 font-semibold">Your Target Niche</label>
+                            <input type="text" id="niche" placeholder="e.g., Fitness enthusiasts, Pet lovers, Gamers..." 
+                                   class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                            <p class="text-sm text-purple-300 mt-2">💡 Tip: Choose something you're passionate about with an underserved market</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Name Your Brand",
+                icon: "fas fa-font",
+                content: `
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-pink-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-font text-2xl text-pink-400"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Step 2: How to Name Your Brand</h2>
+                            <p class="text-purple-200 text-lg">Create a memorable, meaningful brand identity</p>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-white bg-opacity-10 rounded-xl p-6">
+                                <label class="block text-white mb-2 font-semibold">Brand Name Ideas</label>
+                                <textarea id="brand-ideas" placeholder="Brainstorm 5-10 brand name ideas..." 
+                                        class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-pink-400 h-32"></textarea>
+                            </div>
+                            <div class="bg-white bg-opacity-10 rounded-xl p-6">
+                                <label class="block text-white mb-2 font-semibold">Final Brand Name</label>
+                                <input type="text" id="brand-name" placeholder="Your chosen brand name" 
+                                       class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-pink-400">
+                                <p class="text-sm text-purple-300 mt-2">Check domain availability at GoDaddy or Namecheap</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Trademark Protection",
+                icon: "fas fa-shield-alt",
+                content: `
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-green-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-shield-alt text-2xl text-green-400"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Step 3: How to Obtain a Trademark</h2>
+                            <p class="text-purple-200 text-lg">Protect your brand legally from day one</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-xl p-6">
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Trademark Search Notes</label>
+                                    <textarea id="trademark-search" placeholder="USPTO search results, similar marks..." 
+                                            class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-green-400 h-24"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Application Status</label>
+                                    <select id="trademark-status" class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-green-400">
+                                        <option value="">Select status</option>
+                                        <option value="research">Research Phase</option>
+                                        <option value="filed">Application Filed</option>
+                                        <option value="pending">Pending Review</option>
+                                        <option value="approved">Approved</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-4 p-4 bg-yellow-500 bg-opacity-20 rounded-lg">
+                                <p class="text-yellow-200 text-sm"><i class="fas fa-lightbulb mr-2"></i>Pro Tip: Use LegalZoom or consult a trademark attorney for complex filings</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Adobe Creative Suite",
+                icon: "fas fa-paint-brush",
+                content: `
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-purple-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-paint-brush text-2xl text-purple-400"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Step 4: Adobe Creative Suite Mastery</h2>
+                            <p class="text-purple-200 text-lg">Design professional graphics and branding materials</p>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-white bg-opacity-10 rounded-xl p-6">
+                                <label class="block text-white mb-2 font-semibold">Design Software Notes</label>
+                                <textarea id="adobe-notes" placeholder="Photoshop, Illustrator, InDesign techniques..." 
+                                        class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-purple-400 h-32"></textarea>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Upload Design Mockup</label>
+                                    <input type="file" id="design-upload" accept="image/*" class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white border border-white border-opacity-20 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-500 file:text-white hover:file:bg-purple-600">
+                                </div>
+                                <div id="design-preview" class="hidden">
+                                    <img class="w-full max-w-sm rounded-lg shadow-lg mx-auto" alt="Design Preview">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Screen Printing",
+                icon: "fas fa-tshirt",
+                content: `
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-orange-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-tshirt text-2xl text-orange-400"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Step 5: Screen Printing Techniques</h2>
+                            <p class="text-purple-200 text-lg">Master traditional printing methods</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-xl p-6 space-y-4">
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Screen Printing Process</label>
+                                    <textarea id="screenprint-process" placeholder="Emulsion coating, exposure, printing..." 
+                                            class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-orange-400 h-24"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Equipment List</label>
+                                    <textarea id="screenprint-equipment" placeholder="Screens, squeegees, inks, press..." 
+                                            class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-orange-400 h-24"></textarea>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-orange-500 bg-opacity-20 rounded-lg">
+                                <p class="text-orange-200 text-sm"><i class="fas fa-tools mr-2"></i>Consider starting with DTG printing for small runs before investing in screen printing equipment</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Find Quality Blanks",
+                icon: "fas fa-box",
+                content: `
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-teal-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-box text-2xl text-teal-400"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Step 6: Source Quality Blanks</h2>
+                            <p class="text-purple-200 text-lg">Find the perfect base products for your designs</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-xl p-6 space-y-4">
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Blank Suppliers</label>
+                                    <textarea id="blank-suppliers" placeholder="Bella+Canvas, Gildan, Next Level, AS Colour..." 
+                                            class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-teal-400 h-24"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Product Specifications</label>
+                                    <textarea id="blank-specs" placeholder="Fabric weight, fit, colors available..." 
+                                            class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-teal-400 h-24"></textarea>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 bg-teal-500 bg-opacity-20 text-teal-200 rounded-full text-sm">T-Shirts</span>
+                                <span class="px-3 py-1 bg-teal-500 bg-opacity-20 text-teal-200 rounded-full text-sm">Hoodies</span>
+                                <span class="px-3 py-1 bg-teal-500 bg-opacity-20 text-teal-200 rounded-full text-sm">Hats</span>
+                                <span class="px-3 py-1 bg-teal-500 bg-opacity-20 text-teal-200 rounded-full text-sm">Tote Bags</span>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Shoot Your Lookbook",
+                icon: "fas fa-camera",
+                content: `
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-red-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-camera text-2xl text-red-400"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Step 7: Professional Lookbook Photography</h2>
+                            <p class="text-purple-200 text-lg">Create stunning product photography</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-xl p-6 space-y-4">
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Photography Setup Notes</label>
+                                    <textarea id="photo-setup" placeholder="Lighting, backgrounds, models..." 
+                                            class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-red-400 h-24"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Upload Lookbook Photos</label>
+                                    <input type="file" id="lookbook-upload" accept="image/*" multiple 
+                                           class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white border border-white border-opacity-20 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-500 file:text-white hover:file:bg-red-600">
+                                </div>
+                            </div>
+                            <div id="lookbook-preview" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <!-- Previews will appear here -->
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Build Your Website",
+                icon: "fas fa-globe",
+                content: `
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-indigo-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-globe text-2xl text-indigo-400"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Step 8: Website Development</h2>
+                            <p class="text-purple-200 text-lg">Create your online storefront</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-xl p-6 space-y-4">
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Domain & Hosting</label>
+                                    <input type="text" id="domain" placeholder="yourbrand.com" 
+                                           class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-indigo-400 mb-4">
+                                    <label class="block text-white mb-2 font-semibold">Platform Choice</label>
+                                    <select id="platform" class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                        <option value="">Choose platform</option>
+                                        <option value="shopify">Shopify</option>
+                                        <option value="woocommerce">WooCommerce</option>
+                                        <option value="squarespace">Squarespace</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Design & Features Notes</label>
+                                    <textarea id="website-notes" placeholder="Color scheme, layout, must-have features..." 
+                                            class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-indigo-400 h-32"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Shopify Integration",
+                icon: "fas fa-shopping-cart",
+                content: `
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-green-600 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-shopping-cart text-2xl text-green-400"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Step 9: Shopify Store Setup</h2>
+                            <p class="text-purple-200 text-lg">Configure your e-commerce powerhouse</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-xl p-6 space-y-4">
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Store URL</label>
+                                    <input type="text" id="shopify-url" placeholder="yourbrand.myshopify.com" 
+                                           class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-green-400">
+                                </div>
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Theme Selection</label>
+                                    <select id="shopify-theme" class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-green-400">
+                                        <option value="">Choose theme</option>
+                                        <option value="dawn">Dawn (Free)</option>
+                                        <option value="debut">Debut (Free)</option>
+                                        <option value="prestige">Prestige (Premium)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-white mb-2 font-semibold">Apps & Integrations</label>
+                                <textarea id="shopify-apps" placeholder="Oberlo, Printful, Klaviyo, etc..." 
+                                        class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-green-400 h-24"></textarea>
+                            </div>
+                            <div class="p-4 bg-green-500 bg-opacity-20 rounded-lg">
+                                <p class="text-green-200 text-sm"><i class="fas fa-rocket mr-2"></i>Start with Shopify's 14-day free trial to test everything</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Core Lectures",
+                icon: "fas fa-chalkboard-teacher",
+                content: `
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-blue-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-chalkboard-teacher text-2xl text-blue-400"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Step 10: Overarching Lectures</h2>
+                            <p class="text-purple-200 text-lg">Key business principles and strategies</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-xl p-6">
+                            <label class="block text-white mb-2 font-semibold">Key Takeaways & Insights</label>
+                            <textarea id="core-lectures" placeholder="Business model, pricing strategy, customer psychology..." 
+                                    class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-blue-400 h-48"></textarea>
+                            <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
+                                <div class="p-3 bg-blue-500 bg-opacity-20 rounded-lg">
+                                    <h4 class="font-semibold text-blue-200 mb-1">Customer Journey</h4>
+                                    <p class="text-blue-300 text-xs">Awareness → Consideration → Purchase → Retention</p>
+                                </div>
+                                <div class="p-3 bg-blue-500 bg-opacity-20 rounded-lg">
+                                    <h4 class="font-semibold text-blue-200 mb-1">Value Proposition</h4>
+                                    <p class="text-blue-300 text-xs">What makes you different?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Rhetoric Mastery",
+                icon: "fas fa-quote-left",
+                content: `
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-purple-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-quote-left text-2xl text-purple-400"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Step 11: Figures of Speech Catalogue</h2>
+                            <p class="text-purple-200 text-lg">Master persuasive language for branding</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-xl p-6 space-y-4">
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Key Rhetorical Devices</label>
+                                    <textarea id="rhetorical-devices" placeholder="Metaphor, Alliteration, Anaphora, etc..." 
+                                            class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-purple-400 h-24"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Brand Voice Examples</label>
+                                    <textarea id="brand-voice" placeholder="Sample taglines, social media captions..." 
+                                            class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-purple-400 h-24"></textarea>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="p-3 bg-purple-500 bg-opacity-20 rounded-lg text-center">
+                                    <div class="text-2xl mb-1">🔥</div>
+                                    <div class="text-purple-200 font-semibold">Passion</div>
+                                </div>
+                                <div class="p-3 bg-purple-500 bg-opacity-20 rounded-lg text-center">
+                                    <div class="text-2xl mb-1">💎</div>
+                                    <div class="text-purple-200 font-semibold">Precision</div>
+                                </div>
+                                <div class="p-3 bg-purple-500 bg-opacity-20 rounded-lg text-center">
+                                    <div class="text-2xl mb-1">✨</div>
+                                    <div class="text-purple-200 font-semibold">Poetry</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Find Your Mentors",
+                icon: "fas fa-users",
+                content: `
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-amber-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-users text-2xl text-amber-400"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Step 12: Personal Mentors</h2>
+                            <p class="text-purple-200 text-lg">Build your support network</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-xl p-6 space-y-4">
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Mentor Contacts</label>
+                                    <textarea id="mentor-contacts" placeholder="Industry experts, local business owners..." 
+                                            class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-amber-400 h-24"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Learning Resources</label>
+                                    <textarea id="learning-resources" placeholder="Books, podcasts, courses, communities..." 
+                                            class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-amber-400 h-24"></textarea>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-amber-500 bg-opacity-20 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 bg-amber-500 bg-opacity-40 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-lightbulb text-amber-300"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-amber-200 font-semibold">Success Formula</h4>
+                                        <p class="text-amber-300 text-sm">Vision + Mentorship + Persistent Action = Breakthrough</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Find Inspiration",
+                icon: "fas fa-star",
+                content: `
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-gradient-to-br from-yellow-400 to-pink-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-star text-2xl text-yellow-400"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Step 13: Further Inspiration</h2>
+                            <p class="text-purple-200 text-lg">Fuel your creative journey</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 rounded-xl p-6 space-y-4">
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Brand Inspiration</label>
+                                    <textarea id="brand-inspiration" placeholder="Brands you admire and why..." 
+                                            class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-yellow-400 h-24"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-white mb-2 font-semibold">Creative Sparks</label>
+                                    <textarea id="creative-sparks" placeholder="Mood boards, color palettes, design trends..." 
+                                            class="w-full p-4 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-300 border border-white border-opacity-20 focus:outline-none focus:ring-2 focus:ring-yellow-400 h-24"></textarea>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                                <div class="p-4 bg-gradient-to-br from-yellow-400 to-orange-500 bg-opacity-20 rounded-xl text-center">
+                                    <i class="fas fa-palette text-2xl text-yellow-400 mb-2"></i>
+                                    <div class="text-yellow-200 font-semibold">Colors</div>
+                                </div>
+                                <div class="p-4 bg-gradient-to-br from-yellow-400 to-orange-500 bg-opacity-20 rounded-xl text-center">
+                                    <i class="fas fa-font text-2xl text-yellow-400 mb-2"></i>
+                                    <div class="text-yellow-200 font-semibold">Typography</div>
+                                </div>
+                                <div class="p-4 bg-gradient-to-br from-yellow-400 to-orange-500 bg-opacity-20 rounded-xl text-center">
+                                    <i class="fas fa-image text-2xl text-yellow-400 mb-2"></i>
+                                    <div class="text-yellow-200 font-semibold">Imagery</div>
+                                </div>
+                                <div class="p-4 bg-gradient-to-br from-yellow-400 to-orange-500 bg-opacity-20 rounded-xl text-center">
+                                    <i class="fas fa-lightbulb text-2xl text-yellow-400 mb-2"></i>
+                                    <div class="text-yellow-200 font-semibold">Ideas</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        let currentStep = 0;
+        const totalSteps = stepsConfig.length;
+
+        // Initialize data structure
+        let brandData = {
+            niche: '',
+            brandIdeas: '',
+            brandName: '',
+            trademarkSearch: '',
+            trademarkStatus: '',
+            adobeNotes: '',
+            designFile: null,
+            screenprintProcess: '',
+            screenprintEquipment: '',
+            blankSuppliers: '',
+            blankSpecs: '',
+            photoSetup: '',
+            lookbookFiles: [],
+            domain: '',
+            platform: '',
+            websiteNotes: '',
+            shopifyUrl: '',
+            shopifyTheme: '',
+            shopifyApps: '',
+            coreLectures: '',
+            rhetoricalDevices: '',
+            brandVoice: '',
+            mentorContacts: '',
+            learningResources: '',
+            brandInspiration: '',
+            creativeSparks: ''
+        };
+
+        // DOM Elements
+        const stepsContainer = document.getElementById('steps-container');
+        const stepsList = document.getElementById('steps-list');
+        const prevBtn = document.getElementById('prev');
+        const nextBtn = document.getElementById('next');
+        const progress = document.getElementById('progress');
+        const progressBar = document.getElementById('progress-bar');
+
+        // Initialize steps list
+        function initStepsList() {
+            stepsList.innerHTML = stepsConfig.map((step, index) => `
+                <div class="step-item flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
+                    index === 0 ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10'
+                }" data-step="${index}">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                        index === 0 ? 'bg-yellow-400 text-gray-900' : 'bg-white bg-opacity-20 text-white'
+                    }">${index + 1}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-white font-medium truncate">${step.title}</div>
+                        <div class="text-purple-300 text-xs truncate">${index === 0 ? 'Current Step' : 'Pending'}</div>
+                    </div>
+                    <i class="fas fa-check text-green-400 text-sm ${index === 0 ? 'hidden' : ''}"></i>
+                </div>
+            `).join('');
+        }
+
+        // Show specific step
+        function showStep(stepIndex) {
+            stepsContainer.innerHTML = stepsConfig[stepIndex].content;
+            
+            // Update progress
+            const progressPercent = ((stepIndex + 1) / totalSteps) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+            progress.textContent = `Step ${stepIndex + 1} of ${totalSteps}`;
+            
+            // Update navigation
+            prevBtn.disabled = stepIndex === 0;
+            nextBtn.innerHTML = stepIndex === totalSteps - 1 
+                ? '<span>Complete Course</span><i class="fas fa-trophy"></i>'
+                : '<span>Next Step</span><i class="fas fa-arrow-right"></i>';
+            
+            // Update steps list
+            document.querySelectorAll('.step-item').forEach((item, index) => {
+                item.classList.toggle('bg-white', index === stepIndex);
+                item.classList.toggle('bg-white', index < stepIndex);
+                item.classList.toggle('bg-white', index < stepIndex, 'bg-opacity-20');
+                item.querySelector('.fa-check').classList.toggle('hidden', index >= stepIndex);
+                const statusEl = item.querySelector('div:last-child');
+                if (index < stepIndex) {
+                    statusEl.textContent = 'Completed';
+                    statusEl.className = 'text-green-300 text-xs truncate';
+                } else if (index === stepIndex) {
+                    statusEl.textContent = 'Current Step';
+                    statusEl.className = 'text-yellow-300 text-xs truncate';
+                } else {
+                    statusEl.textContent = 'Pending';
+                    statusEl.className = 'text-purple-300 text-xs truncate';
+                }
+            });
+
+            currentStep = stepIndex;
+            attachEventListeners();
+            loadStepData(stepIndex);
+        }
+
+        // Load data for current step
+        function loadStepData(stepIndex) {
+            const stepData = brandData;
+            const inputs = stepsContainer.querySelectorAll('input, textarea, select');
+            
+            inputs.forEach(input => {
+                const id = input.id;
+                if (stepData[id] !== undefined) {
+                    input.value = stepData[id];
+                }
+            });
+        }
+
+        // Save current step data
+        function saveCurrentStep() {
+            const inputs = stepsContainer.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                brandData[input.id] = input.value;
+            });
+            localStorage.setItem('brandBuilderData', JSON.stringify(brandData));
+        }
+
+        // Attach event listeners for current step
+        function attachEventListeners() {
+            // File uploads
+            const designUpload = document.getElementById('design-upload');
+            if (designUpload) {
+                designUpload.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            brandData.designFile = reader.result;
+                            const preview = document.getElementById('design-preview');
+                            preview.querySelector('img').src = reader.result;
+                            preview.classList.remove('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            const lookbookUpload = document.getElementById('lookbook-upload');
+            if (lookbookUpload) {
+                lookbookUpload.addEventListener('change', (e) => {
+                    const preview = document.getElementById('lookbook-preview');
+                    preview.innerHTML = '';
+                    brandData.lookbookFiles = [];
+                    
+                    Array.from(e.target.files).forEach((file, index) => {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            brandData.lookbookFiles.push(reader.result);
+                            const img = document.createElement('img');
+                            img.src = reader.result;
+                            img.className = 'w-full h-48 object-cover rounded-lg shadow-lg';
+                            const container = document.createElement('div');
+                            container.className = 'relative group';
+                            container.appendChild(img);
+                            preview.appendChild(container);
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                });
+            }
+
+            // Auto-save on input change
+            const inputs = stepsContainer.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                input.addEventListener('change', saveCurrentStep);
+                input.addEventListener('blur', saveCurrentStep);
+            });
+        }
+
+        // Navigation
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps - 1) {
+                saveCurrentStep();
+                showStep(currentStep + 1);
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                saveCurrentStep();
+                showStep(currentStep - 1);
+            }
+        });
+
+        // Steps list navigation
+        stepsList.addEventListener('click', (e) => {
+            const stepItem = e.target.closest('.step-item');
+            if (stepItem) {
+                const stepIndex = parseInt(stepItem.dataset.step);
+                if (stepIndex <= currentStep || confirm('This step is ahead. Would you like to jump forward?')) {
+                    saveCurrentStep();
+                    showStep(stepIndex);
+                }
+            }
+        });
+
+        // Action buttons
+        document.getElementById('save').addEventListener('click', () => {
+            saveCurrentStep();
+            // Visual feedback
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check mr-2"></i>Saved!';
+            btn.classList.add('bg-green-600');
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('bg-green-600');
+            }, 2000);
+        });
+
+        document.getElementById('export').addEventListener('click', () => {
+            saveCurrentStep();
+            const dataStr = JSON.stringify(brandData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `brand-builder-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('import').addEventListener('click', () => {
+            document.getElementById('import-file').click();
+        });
+
+        document.getElementById('import-file').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const importedData = JSON.parse(event.target.result);
+                        Object.assign(brandData, importedData);
+                        localStorage.setItem('brandBuilderData', JSON.stringify(brandData));
+                        
+                        // Reload current step to show imported data
+                        showStep(currentStep);
+                        
+                        // Visual feedback
+                        const btn = document.querySelector('#import');
+                        const originalText = btn.innerHTML;
+                        btn.innerHTML = '<i class="fas fa-check mr-2"></i>Imported!';
+                        btn.classList.add('bg-green-600');
+                        setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.classList.remove('bg-green-600');
+                        }, 2000);
+                    } catch (error) {
+                        alert('Error importing file. Please check the JSON format.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        document.getElementById('reset').addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+                localStorage.removeItem('brandBuilderData');
+                brandData = {
+                    niche: '',
+                    brandIdeas: '',
+                    brandName: '',
+                    trademarkSearch: '',
+                    trademarkStatus: '',
+                    adobeNotes: '',
+                    designFile: null,
+                    screenprintProcess: '',
+                    screenprintEquipment: '',
+                    blankSuppliers: '',
+                    blankSpecs: '',
+                    photoSetup: '',
+                    lookbookFiles: [],
+                    domain: '',
+                    platform: '',
+                    websiteNotes: '',
+                    shopifyUrl: '',
+                    shopifyTheme: '',
+                    shopifyApps: '',
+                    coreLectures: '',
+                    rhetoricalDevices: '',
+                    brandVoice: '',
+                    mentorContacts: '',
+                    learningResources: '',
+                    brandInspiration: '',
+                    creativeSparks: ''
+                };
+                showStep(0);
+            }
+        });
+
+        // Load saved data on startup
+        const savedData = localStorage.getItem('brandBuilderData');
+        if (savedData) {
+            try {
+                Object.assign(brandData, JSON.parse(savedData));
+                // Find the furthest completed step
+                const completedStep = Math.max(
+                    brandData.niche ? 0 : -1,
+                    brandData.brandName ? 1 : -1,
+                    brandData.trademarkSearch ? 2 : -1,
+                    // Add more conditions as needed
+                    -1
+                );
+                currentStep = Math.max(0, completedStep);
+            } catch (error) {
+                console.warn('Could not load saved data:', error);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && currentStep < totalSteps - 1) {
+                nextBtn.click();
+            } else if (e.key === 'ArrowLeft' && currentStep > 0) {
+                prevBtn.click();
+            }
+        });
+
+        // Initialize
+        initStepsList();
+        showStep(currentStep);
+    </script>
+</body>
+</html>
